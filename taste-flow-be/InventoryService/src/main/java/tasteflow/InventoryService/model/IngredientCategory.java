@@ -22,5 +22,6 @@ public class IngredientCategory {
     @Length(min = 3, message = "Name must greater than 3 chars")
     @Nationalized
     private String name;
+    @Nationalized
     private String description;
 }
