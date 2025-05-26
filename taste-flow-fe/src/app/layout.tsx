@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import ClientLayoutWrapper from "./ClientLayoutWrapper";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -20,6 +21,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
   return (
     <>
       <html lang="en" suppressHydrationWarning>
@@ -31,11 +34,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Header />
-            <main className="min-h-screen  mx-auto px-4 py-8 bg-[#1B1B1B] text-white">
-              {children}
-            </main>
-            <Footer />
+            <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
           </ThemeProvider>
         </body>
       </html>
