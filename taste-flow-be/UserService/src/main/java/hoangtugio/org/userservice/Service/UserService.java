@@ -1,8 +1,8 @@
-package hoangtugio.org.userservice.UserService;
+package hoangtugio.org.userservice.Service;
 
 import hoangtugio.org.userservice.Exception.CustomException;
 import hoangtugio.org.userservice.Model.User;
-import hoangtugio.org.userservice.UserRepository.UserRepository;
+import hoangtugio.org.userservice.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

@@ -2,7 +2,7 @@ package hoangtugio.org.userservice.Controller;
 
 
 import hoangtugio.org.userservice.Model.User;
-import hoangtugio.org.userservice.UserRepository.UserRepository;
+import hoangtugio.org.userservice.Repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;

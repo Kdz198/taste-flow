@@ -1,7 +1,7 @@
 package hoangtugio.org.userservice.Security;
 
 import hoangtugio.org.userservice.Model.User;
-import hoangtugio.org.userservice.UserRepository.UserRepository;
+import hoangtugio.org.userservice.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

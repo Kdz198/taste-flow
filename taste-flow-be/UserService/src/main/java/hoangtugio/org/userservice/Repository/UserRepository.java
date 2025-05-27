@@ -1,4 +1,4 @@
-package hoangtugio.org.userservice.UserRepository;
+package hoangtugio.org.userservice.Repository;
 
 import hoangtugio.org.userservice.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;

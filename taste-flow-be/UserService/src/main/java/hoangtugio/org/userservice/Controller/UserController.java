@@ -3,7 +3,8 @@ package hoangtugio.org.userservice.Controller;
 
 import hoangtugio.org.userservice.Exception.CustomException;
 import hoangtugio.org.userservice.Model.User;
-import hoangtugio.org.userservice.UserService.UserService;
+import hoangtugio.org.userservice.Repository.UserRepository;
+import hoangtugio.org.userservice.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,10 +21,13 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping("/me")
     public String getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return "Hello, " + auth.getName();
+        return  userRepository.findByEmail(auth.getName()).toString();
     }
 
     @PostMapping
