@@ -29,4 +29,7 @@ public class Ingredient {
 
     @Enumerated(EnumType.STRING)
     private Unit unit;
+
+    @Column(name="active")
+    private boolean active;
 }

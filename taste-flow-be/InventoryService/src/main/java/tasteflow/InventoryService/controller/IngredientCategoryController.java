@@ -15,7 +15,7 @@ public class IngredientCategoryController {
     private IngredientCategoryService service;
 
     @GetMapping
-    public List<IngredientCategory> getAll() {
+    public List<IngredientCategory> getAllIngredientCategory() {
         return service.findAll();
     }
 
@@ -25,7 +25,7 @@ public class IngredientCategoryController {
     }
 
     @PostMapping()
-    public IngredientCategory create(@Valid @RequestBody IngredientCategory ingredientCategory) {
+    public IngredientCategory createIngredientCategory(@Valid @RequestBody IngredientCategory ingredientCategory) {
         return service.save(ingredientCategory);
     }
 
