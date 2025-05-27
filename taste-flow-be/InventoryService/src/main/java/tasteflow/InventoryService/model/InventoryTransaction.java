@@ -32,5 +32,6 @@ public class InventoryTransaction {
 
     @NotNull(message = "Type must not be null !")
     private boolean transactionType;
-
+    //true: nhap
+    //false :xuat
 }

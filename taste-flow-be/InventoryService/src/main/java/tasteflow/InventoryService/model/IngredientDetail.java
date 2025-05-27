@@ -27,4 +27,6 @@ public class IngredientDetail {
     @Min(value = 0,message = "Quantity must be greater than 0 !")
     private int quantity;
 
+    @Column(name="active")
+    private boolean active;
 }
