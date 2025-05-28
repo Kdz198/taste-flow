@@ -5,10 +5,13 @@ import { ICategory } from '../models/category.model';
 const router = routes.Router();
 
 router.post('/', createCategory);
-router.post('/', createCategories);
+router.post('/add-categories', createCategories);
 router.get('/:id', getCategory);
 router.get('/', getAll);
 router.delete('/:id', deleteCategoryByID);
 router.put('/:id', updateCategoryById);
+
+
+
 
 export default router
