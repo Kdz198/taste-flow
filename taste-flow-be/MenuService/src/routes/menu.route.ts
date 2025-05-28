@@ -1,4 +1,4 @@
-import routes from 'express';
+import routes, {Request, Response} from 'express';
 import { createMenu, createMenus, getMenu, getAll, updateMenuById, deleteMenuById } from '../controllers/menu.controller';
 import { IMenu } from '../models/menu.model';
 
@@ -16,4 +16,7 @@ router.put('/menu/:id', updateMenuById);
 // Route to delete a menu by ID
 router.delete('/menu/:id', deleteMenuById);
 // Export the router
+router.get('/menuservice/test', (req : Request, res : Response) => {
+    res.status(200).send('OK');
+})
 export default router;

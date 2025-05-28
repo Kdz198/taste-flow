@@ -22,7 +22,7 @@ public class Controller {
     {
         try {
             emailService.sendOtpEmail(to,otp);
-            return "Email sent successfully to " ;
+            return "Email sent successfully to " + to;
         } catch (MessagingException e) {
             return "Error sending email: " + e.getMessage();
         }
