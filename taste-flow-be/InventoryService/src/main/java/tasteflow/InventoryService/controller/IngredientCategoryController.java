@@ -30,12 +30,12 @@ public class IngredientCategoryController {
     }
 
     @PutMapping()
-    public IngredientCategory update(@Valid @RequestBody IngredientCategory ingredientCategory) {
+    public IngredientCategory updateIngredientCategory(@Valid @RequestBody IngredientCategory ingredientCategory) {
         return service.update(ingredientCategory);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
+    public void deleteIngredientCategory(@PathVariable int id) {
         service.delete(id);
     }
 }

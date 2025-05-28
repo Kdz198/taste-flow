@@ -1,6 +1,7 @@
 package tasteflow.InventoryService.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tasteflow.InventoryService.exception.CustomException;
@@ -13,6 +14,8 @@ import java.util.List;
 public class IngredientDetailService {
     @Autowired
     private IngredientDetailRepository repo;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     public List<IngredientDetail> findAll() {
         return repo.findAll();
@@ -28,6 +31,7 @@ public class IngredientDetailService {
     }
 
     public IngredientDetail save(IngredientDetail ingredientDetail) {
+        eventPublisher.publishEvent(ingredientDetail);
         return repo.save(ingredientDetail);
     }
 
