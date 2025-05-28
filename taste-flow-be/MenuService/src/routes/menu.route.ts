@@ -4,12 +4,9 @@ import { IMenu } from '../models/menu.model';
 
 const router = routes.Router();
 router.post('/', createMenu);
-router.post('/', createMenus);
+router.post('/add-menus', createMenus);
 router.get('/:id', getMenu);
 router.get('/', getAll);
 router.put('/:id', updateMenuById);
 router.delete('/:id', deleteMenuById);
-router.get('/menuservice/test', (req: Request, res: Response) => {
-    res.status(200).send('OK');
-})
 export default router;

@@ -15,11 +15,11 @@ app.listen(process.env.PORT, () => {
 });
 
 //Eureka Config
-import { eurekaClient } from './config/eureka.client';
+// import { eurekaClient } from './config/eureka.client';
 
-app.listen(3000, () => {
-    console.log('MenuService is running on port 3000');
-    eurekaClient.start((error: any) => {
-        console.log('Eureka registration complete or failed:', error || 'OK');
-    });
-});
+// app.listen(3000, () => {
+//     console.log('MenuService is running on port 3000');
+//     eurekaClient.start((error: any) => {
+//         console.log('Eureka registration complete or failed:', error || 'OK');
+//     });
+// });
