@@ -1,6 +1,7 @@
 package hoangtugio.org.userservice.Controller;
 
 import hoangtugio.org.userservice.Exception.CustomException;
+import hoangtugio.org.userservice.Model.OTP;
 import hoangtugio.org.userservice.Model.User;
 import hoangtugio.org.userservice.Repository.OTPRepository;
 import hoangtugio.org.userservice.Repository.UserRepository;
@@ -8,9 +9,7 @@ import hoangtugio.org.userservice.Service.OTPService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
@@ -45,4 +44,40 @@ public class OTPController {
         String url = "http://NOTIFICATION-SERVICE/api/notification/otp?to=" + email + "&otp=" + otp;
         return restTemplate.getForObject(url, String.class);
     }
+
+    @GetMapping("/verify")
+    public String verifyOtp(@RequestParam String email, @RequestParam String otp) {
+        Optional<User> customer = customerRepository.findByEmail(email);
+        if (customer.isEmpty()) {
+            return "Invalid email";
+        }
+
+        boolean isValid = otpService.verifyOTP(customer.get().getEmail(), otp);
+        return isValid ? "OTP verified successfully" : "Invalid or expired OTP";
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String email, @RequestParam String otp, @RequestParam String newPassword) {
+        Optional<User> customer = customerRepository.findByEmail(email);
+        if (customer.isEmpty()) {
+            return "Invalid email";
+        }
+
+        Optional<OTP> otpreal = OTPrepository.findTopByEmailOrderByExpiryDateDesc(email);
+        if (!otpreal.get().getOtp().equals(otp)) {
+            return "Invalid OTP";
+        }
+        customer.get().setPassword(newPassword);
+        customerRepository.save(customer.get());
+        return "Password reset successfully";
+    }
+
+
+    @GetMapping("testmenu")
+    public String testMenu() {
+        String url = "http://MENU-SERVICE/api/category";
+        return restTemplate.getForObject(url, String.class);
+    }
+
+
 }
