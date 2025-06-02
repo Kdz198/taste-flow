@@ -3,10 +3,12 @@ package tasteflow.InventoryService.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import tasteflow.InventoryService.model.Ingredient;
 import tasteflow.InventoryService.model.IngredientDetail;
 import tasteflow.InventoryService.service.IngredientDetailService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ingredient-details")
@@ -42,6 +44,16 @@ public class IngredientDetailController {
     @GetMapping("find-by-ingredient/{id}")
     public List<IngredientDetail> getIngredientDetailByIngredientId(@PathVariable int id) {
         return service.findByIngredient(id);
+    }
+
+    @GetMapping("/low-stock")
+    public List<Ingredient> getLowStockIngredient() {
+        return service.getLowStockIngredient();
+    }
+
+    @GetMapping("/set-active/{id}")
+    public void setActiveIngredientDetails(@PathVariable int id) {
+        service.setActive(id);
     }
 
 }

@@ -3,10 +3,12 @@ package tasteflow.InventoryService.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import tasteflow.InventoryService.model.Ingredient;
 import tasteflow.InventoryService.model.IngredientCategory;
 import tasteflow.InventoryService.service.IngredientCategoryService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ingredient-categories")
@@ -38,4 +40,6 @@ public class IngredientCategoryController {
     public void deleteIngredientCategory(@PathVariable int id) {
         service.delete(id);
     }
+
+
 }
