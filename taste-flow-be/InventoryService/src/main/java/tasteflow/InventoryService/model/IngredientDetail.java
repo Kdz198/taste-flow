@@ -21,6 +21,9 @@ public class IngredientDetail {
     @ManyToOne
     private Ingredient ingredient;
 
+    @Column(name = "EntryDate")
+    private Date entryDate;
+
     @FutureOrPresent(message = "Expire Date must not be in the past !")
     private Date expireDate;
 

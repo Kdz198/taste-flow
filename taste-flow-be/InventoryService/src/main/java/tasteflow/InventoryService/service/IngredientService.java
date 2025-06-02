@@ -55,4 +55,17 @@ public class IngredientService {
             throw new CustomException("Ingredient does not exist !", HttpStatus.NOT_FOUND);
         }
     }
+
+    public void setActive(int id) {
+        if(repo.existsById(id)) {
+            Ingredient ingredient = repo.findById(id).get();
+            if(ingredient.isActive()) {
+                ingredient.setActive(false);
+            }
+            else{
+                ingredient.setActive(true);
+            }
+            repo.save(ingredient);
+        }
+    }
 }

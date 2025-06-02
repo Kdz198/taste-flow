@@ -38,4 +38,9 @@ public class IngredientController {
     public void deleteIngredient(@PathVariable int id) {
         service.deleteIngredient(id);
     }
+
+    @GetMapping("/set-active/{id}")
+    public void setActiveIngredient(@PathVariable int id) {
+        service.setActive(id);
+    }
 }
