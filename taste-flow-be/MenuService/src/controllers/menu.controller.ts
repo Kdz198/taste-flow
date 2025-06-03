@@ -81,3 +81,8 @@ export const deleteMenuById = async (req: Request, res: Response): Promise<void>
     }
 };
 
+export const Helloword =  (req: Request, res: Response) => {
+
+    console.log("dtmemay");
+    return res.status(200).send('Helloword');
+}

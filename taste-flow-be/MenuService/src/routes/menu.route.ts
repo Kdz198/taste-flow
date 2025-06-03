@@ -1,5 +1,13 @@
 import routes, { Request, Response } from 'express';
-import { createMenu, createMenus, getMenu, getAll, updateMenuById, deleteMenuById } from '../controllers/menu.controller';
+import {
+    createMenu,
+    createMenus,
+    getMenu,
+    getAll,
+    updateMenuById,
+    deleteMenuById,
+    Helloword
+} from '../controllers/menu.controller';
 import { IMenu } from '../models/menu.model';
 
 const router = routes.Router();

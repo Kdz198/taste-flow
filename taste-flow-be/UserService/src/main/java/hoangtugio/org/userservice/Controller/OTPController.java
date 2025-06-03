@@ -9,6 +9,7 @@ import hoangtugio.org.userservice.Service.OTPService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -27,8 +28,11 @@ public class OTPController {
     private final UserRepository customerRepository;
     private final OTPRepository OTPrepository;
 
+
+
+    @Async
     @GetMapping("/sendOtp")
-    public String sendOTP(String email) {
+    public void sendOTP(String email) {
 
 
         Optional<User> user = customerRepository.findByEmail(email);
@@ -42,7 +46,7 @@ public class OTPController {
 
 
         String url = "http://NOTIFICATION-SERVICE/api/notification/otp?to=" + email + "&otp=" + otp;
-        return restTemplate.getForObject(url, String.class);
+         restTemplate.getForObject(url, String.class);
     }
 
     @GetMapping("/verify")
