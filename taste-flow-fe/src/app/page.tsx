@@ -26,7 +26,7 @@ export default function Home() {
               From quick weeknight dinners to impressive weekend feasts.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-              <Link href="/menu">
+              <Link href="/manager/category">
                 <Button className="bg-[#F26D16] hover:bg-orange-600 rounded-full px-8 py-3 text-white font-semibold transition-all duration-300 hover:scale-105">
                   Explore All Recipes <MoveRight className="ml-2" size={18} />
                 </Button>
