@@ -24,3 +24,16 @@ export interface Category {
   name: string;
   count: number;
 }
+
+
+export interface User {
+  id: string;
+  name: string;
+  status: boolean;
+}
+
+export interface Dish {
+  id: string;
+  name: string;
+  status: boolean;
+}

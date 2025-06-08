@@ -96,3 +96,15 @@ export const dietaryOptionsMock = [
     { id: 'desserts', name: 'Desserts', count: 8 },
     { id: 'beverages', name: 'Beverages', count: 10 }
   ];
+
+  export const userMock = [
+    { id: '1', name: 'John Doe', status: true },
+    { id: '2', name: 'Jane Smith', status: true },
+    { id: '3', name: 'Alice Johnson', status: false },
+  ];
+  
+  export const dishMock = [
+    { id: '1', name: 'Spaghetti Carbonara', status: true },
+    { id: '2', name: 'Chicken Tikka Masala', status: true },
+    { id: '3', name: 'Chocolate Lava Cake', status: false },
+  ];
