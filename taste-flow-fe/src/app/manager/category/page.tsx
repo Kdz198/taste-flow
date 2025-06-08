@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { categoryMock } from "@/app/utils/mockApi";
 
-// Comment: Mock API - Will be replaced with backend API later
+// Comment: Mock API - Will be replaced with backend API later (DELETE THIS WHEN BE IS READY)
 const fetchCategories = async () => {
   return Promise.resolve(categoryMock);
   
@@ -24,7 +24,7 @@ const fetchCategories = async () => {
 
 // Comment: Create category API - Will be implemented when backend is ready
 const createCategory = async (categoryData) => {
-  // Mock implementation - just return the data with a generated ID
+  // Mock implementation - just return the data with a generated ID (DELETE THIS WHEN BE IS READY)
   return Promise.resolve({ 
     id: Date.now().toString(), 
     ...categoryData 
@@ -51,7 +51,7 @@ const createCategory = async (categoryData) => {
 
 // Comment: Update category API - Will be implemented when backend is ready
 const updateCategory = async (id, categoryData) => {
-  // Mock implementation - just return the updated data
+  // Mock implementation - just return the updated data (DELETE THIS WHEN BE IS READY)
   return Promise.resolve({ id, ...categoryData });
   
   // Uncomment when backend is ready:
@@ -75,7 +75,7 @@ const updateCategory = async (id, categoryData) => {
 
 // Comment: Delete category API - Will be implemented when backend is ready
 const deleteCategory = async (id) => {
-  // Mock implementation - just return success
+  // Mock implementation - just return success (DELETE THIS WHEN BE IS READY)
   return Promise.resolve({ success: true });
   
   // Uncomment when backend is ready:
@@ -98,7 +98,7 @@ export default function CategoryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [name, setName] = useState("");
-  const [count, setCount] = useState(0);
+  const [status, setStatus] = useState(true); // Added to match BE schema
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -109,7 +109,12 @@ export default function CategoryPage() {
     try {
       setIsLoading(true);
       const data = await fetchCategories();
-      setCategories(data);
+      // Normalize data to match BE schema (status field)
+      const normalizedData = data.map(category => ({
+        ...category,
+        status: category.status ?? true // Fallback to true if status is not present (mock API doesn't have it)
+      }));
+      setCategories(normalizedData);
     } catch (error) {
       console.error('Error loading categories:', error);
     } finally {
@@ -125,7 +130,12 @@ export default function CategoryPage() {
 
     try {
       setIsLoading(true);
-      const categoryData = { name: name.trim(), count };
+      // Prepare category data based on BE schema
+      const categoryData = { 
+        name: name.trim(), 
+        status 
+        // count is not included here as it’s not in BE schema, only used in mock API
+      };
 
       if (selectedCategory?.id) {
         // Update existing category
@@ -142,7 +152,7 @@ export default function CategoryPage() {
       // Reset form and close modal
       setIsModalOpen(false);
       setName("");
-      setCount(0);
+      setStatus(true); // Reset to default value as per BE schema
       setSelectedCategory(null);
     } catch (error) {
       console.error('Error saving category:', error);
@@ -155,7 +165,7 @@ export default function CategoryPage() {
   const handleEdit = (category) => {
     setSelectedCategory(category);
     setName(category.name);
-    setCount(category.count);
+    setStatus(category.status ?? true); // Fallback to true if status is undefined
     setIsModalOpen(true);
   };
 
@@ -179,7 +189,7 @@ export default function CategoryPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setName("");
-    setCount(0);
+    setStatus(true); // Reset to default value as per BE schema
     setSelectedCategory(null);
   };
 
@@ -208,7 +218,7 @@ export default function CategoryPage() {
               <tr className="border-b border-[#3A3A3A]">
                 <th className="py-2 px-4">ID</th>
                 <th className="py-2 px-4">Name</th>
-                <th className="py-2 px-4">Count</th>
+                <th className="py-2 px-4">Status</th> {/* Added to match BE schema */}
                 <th className="py-2 px-4">Actions</th>
               </tr>
             </thead>
@@ -217,7 +227,7 @@ export default function CategoryPage() {
                 <tr key={category.id} className="border-b border-[#3A3A3A]">
                   <td className="py-2 px-4">{category.id}</td>
                   <td className="py-2 px-4">{category.name}</td>
-                  <td className="py-2 px-4">{category.count}</td>
+                  <td className="py-2 px-4">{category.status ? 'Active' : 'Inactive'}</td> {/* Added to match BE schema */}
                   <td className="py-2 px-4">
                     <Button 
                       variant="outline" 
@@ -257,14 +267,15 @@ export default function CategoryPage() {
             className="w-full"
             disabled={isLoading}
           />
-          <Input
-            type="number"
-            value={count}
-            onChange={(e) => setCount(Number(e.target.value))}
-            placeholder="Count"
-            className="w-full"
-            disabled={isLoading}
-          />
+          <div className="flex items-center gap-2">
+            <label>Status:</label>
+            <input
+              type="checkbox"
+              checked={status}
+              onChange={(e) => setStatus(e.target.checked)}
+              disabled={isLoading}
+            />
+          </div>
           <div className="flex justify-end gap-2">
             <Button 
               variant="outline" 
