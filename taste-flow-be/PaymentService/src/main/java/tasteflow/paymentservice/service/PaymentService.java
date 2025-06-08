@@ -28,14 +28,14 @@ public class PaymentService {
     }
 
     public Payment getPaymentById(int id) {
-        return paymentRepository.getById(id);
+        return paymentRepository.findById(id).orElseThrow();
     }
 
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
     }
 
-    public Payment getPaymentHistoryByUser (int userId) {
+    public List<Payment> getPaymentHistoryByUser (int userId) {
         return paymentRepository.findByuserId(userId);
     }
 }

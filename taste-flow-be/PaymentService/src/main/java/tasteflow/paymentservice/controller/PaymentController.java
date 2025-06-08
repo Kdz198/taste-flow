@@ -31,9 +31,25 @@ public class PaymentController {
         return paymentService.getAllPayments();
     }
 
+    @GetMapping("{id}")
+    public Payment getPaymentById(@PathVariable int id) {
+
+        return paymentService.getPaymentById(id);
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<Payment> getPaymentByUserId(@PathVariable int userId) {
+        return paymentService.getPaymentHistoryByUser(userId);
+    }
+
     @PostMapping()
     public String createPayment(@RequestBody Payment payment) throws Exception {
         String url ="";
+        int total = payment.getAmount();
+
+        // Cần lấy orderId ra, check xem có phải là KH nó thah toán lại hay ko hay cái này lần đầu xuất hiện dưới DB
+
+
         // bỏ vào DB payment trước sau đó mới gọi VNPAY/Momo để tạo url thanh toán
         if (payment.getDiscountId()==0)
         {
@@ -44,16 +60,16 @@ public class PaymentController {
         {
             //Neu co discountId thi set discount cho cai payment
             payment.setDiscountValue(discountService.getDiscountById(payment.getDiscountId()).getDiscount());
+            total = payment.getAmount() - payment.getAmount()/100*discountService.getDiscountById(payment.getDiscountId()).getDiscount();
         }
         paymentService.processPayment(payment);
 
-
         if (payment.getPaymentMethod() == Payment.PaymentMethod.VNPAY) {
-             url = vnpayService.createVnpayUrl(String.valueOf(payment.getId()), payment.getAmount(), "");
+             url = vnpayService.createVnpayUrl(String.valueOf(payment.getId()), total, "");
         }
         else if (payment.getPaymentMethod() == Payment.PaymentMethod.MOMO)
         {
-            url = momoService.createPaymentRequest(payment.getAmount(), String.valueOf(payment.getId()));
+            url = momoService.createPaymentRequest(total, String.valueOf(payment.getId()));
         }
 
         return url;

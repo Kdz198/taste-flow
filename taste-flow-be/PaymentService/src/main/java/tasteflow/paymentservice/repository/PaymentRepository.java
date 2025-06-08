@@ -3,6 +3,8 @@ package tasteflow.paymentservice.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import tasteflow.paymentservice.model.Payment;
 
+import java.util.List;
+
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
-    Payment findByuserId(int userId);
+    List<Payment> findByuserId(int userId);
 }
