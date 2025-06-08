@@ -25,15 +25,38 @@ export interface Category {
   count: number;
 }
 
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  BANNED = 'BANNED',
+}
+
+export enum UserRole {
+  CUSTOMER = 'CUSTOMER',
+  STAFF = 'STAFF',
+  MANAGER = 'MANAGER',
+  ADMIN = 'ADMIN',
+}
 
 export interface User {
   id: string;
+  email: string;
+  password: string;
   name: string;
-  status: boolean;
+  phone: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
+  status: UserStatus;
+  role: UserRole;
 }
 
 export interface Dish {
   id: string;
   name: string;
-  status: boolean;
+  price: number;
+  status: UserStatus;
+  category: string[];
+  receipt: string[];
+  image: string;
 }
