@@ -63,6 +63,8 @@ public class Payment {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+
+    //Enum filter index
     public enum PaymentStatus {
         PENDING, SUCCESS, FAILED, CANCELLED
     }

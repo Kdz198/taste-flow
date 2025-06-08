@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import tasteflow.paymentservice.model.Payment;
 import tasteflow.paymentservice.service.DiscountService;
+import tasteflow.paymentservice.service.MomoService;
 import tasteflow.paymentservice.service.PaymentService;
 import tasteflow.paymentservice.service.VNPAYService;
 
@@ -21,6 +22,8 @@ public class PaymentController {
     @Autowired
     VNPAYService vnpayService;
     @Autowired
+    MomoService momoService;
+    @Autowired
     DiscountService discountService;
 
     @GetMapping
@@ -29,12 +32,13 @@ public class PaymentController {
     }
 
     @PostMapping()
-    public String createPayment(@RequestBody Payment payment) throws UnsupportedEncodingException {
-
+    public String createPayment(@RequestBody Payment payment) throws Exception {
+        String url ="";
         // bỏ vào DB payment trước sau đó mới gọi VNPAY/Momo để tạo url thanh toán
         if (payment.getDiscountId()==0)
         {
             System.out.println("discount deo co");
+
         }
         else
         {
@@ -44,8 +48,13 @@ public class PaymentController {
         paymentService.processPayment(payment);
 
 
-        // Cần xét if ENUM để gọi VNPAY/Momo các kiểu nha
-        String url = vnpayService.createVnpayUrl(String.valueOf(payment.getId()),payment.getAmount(),"");
+        if (payment.getPaymentMethod() == Payment.PaymentMethod.VNPAY) {
+             url = vnpayService.createVnpayUrl(String.valueOf(payment.getId()), payment.getAmount(), "");
+        }
+        else if (payment.getPaymentMethod() == Payment.PaymentMethod.MOMO)
+        {
+            url = momoService.createPaymentRequest(payment.getAmount(), String.valueOf(payment.getId()));
+        }
 
         return url;
     }
