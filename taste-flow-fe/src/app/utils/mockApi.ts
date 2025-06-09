@@ -96,3 +96,60 @@ export const dietaryOptionsMock = [
     { id: 'desserts', name: 'Desserts', count: 8 },
     { id: 'beverages', name: 'Beverages', count: 10 }
   ];
+
+  export const userMock = [
+    {
+      id: '1',
+      email: 'john.doe@example.com',
+      password: 'password123',
+      name: 'John Doe',
+      phone: '123-456-7890',
+      address: '123 Main St',
+      createdAt: '2025-06-01T00:00:00Z',
+      updatedAt: '2025-06-08T00:00:00Z',
+      status: 'ACTIVE',
+      role: 'CUSTOMER',
+    },
+    {
+      id: '2',
+      email: 'jane.smith@example.com',
+      password: 'pass456',
+      name: 'Jane Smith',
+      phone: '098-765-4321',
+      address: '456 Oak St',
+      createdAt: '2025-06-02T00:00:00Z',
+      updatedAt: '2025-06-07T00:00:00Z',
+      status: 'INACTIVE',
+      role: 'STAFF',
+    },
+  ];
+  
+  export const dishMock = [
+    {
+      id: '1',
+      name: 'Spaghetti Carbonara',
+      price: 12.99,
+      status: 'ACTIVE',
+      category: ['main-course'],
+      receipt: ['Step 1: Cook pasta', 'Step 2: Add sauce'],
+      image: 'spaghetti.png',
+    },
+    {
+      id: '2',
+      name: 'Chicken Tikka Masala',
+      price: 15.50,
+      status: 'ACTIVE',
+      category: ['main-course', 'appetizers'],
+      receipt: ['Step 1: Marinate chicken', 'Step 2: Cook with spices'],
+      image: 'chicken.png',
+    },
+    {
+      id: '3',
+      name: 'Chocolate Lava Cake',
+      price: 8.75,
+      status: 'INACTIVE',
+      category: ['desserts'],
+      receipt: ['Step 1: Mix batter', 'Step 2: Bake'],
+      image: 'chocolate.png',
+    },
+  ];
