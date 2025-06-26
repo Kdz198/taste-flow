@@ -32,6 +32,7 @@ public class OTPController {
 
     @Async
     @GetMapping("/sendOtp")
+    @CrossOrigin(origins = "*")
     public void sendOTP(String email) {
 
 

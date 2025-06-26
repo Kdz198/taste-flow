@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @RestController
@@ -22,6 +24,12 @@ public class AuthController {
     public AuthController(UserRepository userRepository, @Value("${jwt.secret}") String jwtSecret) {
         this.userRepository = userRepository;
         this.jwtSecret = jwtSecret;
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        System.out.println("Đã đưọc gọi endpoint lúc :" + LocalDateTime.now());
+        return "dit me may tran tri";
     }
 
     @PostMapping("/login")
