@@ -4,8 +4,10 @@ package hoangtugio.org.orderservice2.Service;
 import hoangtugio.org.orderservice2.Model.Order;
 import hoangtugio.org.orderservice2.Model.OrderItem;
 import hoangtugio.org.orderservice2.Model.RequestOrderDTO;
+import hoangtugio.org.orderservice2.RabbitMQ.Producer.Producer;
 import hoangtugio.org.orderservice2.Repository.OrderItemRepository;
 import hoangtugio.org.orderservice2.Repository.OrderRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,8 @@ public class OrderService {
     OrderRepository orderRepository;
     @Autowired
     OrderItemRepository orderItemRepository;
+    @Autowired
+    Producer producer;
 
     public Order makeOrder(RequestOrderDTO orderDTO) {
 
@@ -30,12 +34,21 @@ public class OrderService {
             orderItemRepository.save(orderItem);
         }
         //khúc này bắn sự kiện qua inventory để check kho
+        producer.sendOrder(listItem);
         return saveOrder;
+    }
+
+    // sau khi nhận event lock kho thì đổi state
+    public void confirmOrder (int orderId) {
+        Order order  = orderRepository.findById(orderId).orElseThrow();
+        order.setStatus(Order.OrderStatus.CONFIRMED);
+        orderRepository.save(order);
     }
 
     public Order cancleOrder(int orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();
         order.setStatus(Order.OrderStatus.CANCELLED);
+        // Bắn event roll back compensating transaction
         return orderRepository.save(order);
     }
 }

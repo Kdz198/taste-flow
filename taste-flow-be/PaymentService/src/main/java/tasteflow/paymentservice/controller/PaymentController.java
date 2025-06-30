@@ -5,12 +5,8 @@ import com.netflix.discovery.converters.Auto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import tasteflow.paymentservice.model.Payment;
-import tasteflow.paymentservice.service.DiscountService;
-import tasteflow.paymentservice.service.MomoService;
-import tasteflow.paymentservice.service.PaymentService;
-import tasteflow.paymentservice.service.VNPAYService;
-
-import java.io.UnsupportedEncodingException;
+import tasteflow.paymentservice.model.UrlPayment;
+import tasteflow.paymentservice.service.*;
 import java.util.List;
 
 @RestController
@@ -20,11 +16,7 @@ public class PaymentController {
     @Autowired
     PaymentService paymentService;
     @Autowired
-    VNPAYService vnpayService;
-    @Autowired
-    MomoService momoService;
-    @Autowired
-    DiscountService discountService;
+    UrlPaymentService urlPaymentService;
 
     @GetMapping
     public List<Payment> getAllPayments() {
@@ -42,36 +34,19 @@ public class PaymentController {
         return paymentService.getPaymentHistoryByUser(userId);
     }
 
+    @GetMapping("/url")
+    public UrlPayment getUrlPaymentByOrderId(@RequestParam int orderId) {
+        return urlPaymentService.getUrlPayment(orderId);
+    }
+
+
+
     @PostMapping()
     public String createPayment(@RequestBody Payment payment) throws Exception {
         String url ="";
         int total = payment.getAmount();
 
-        // Cần lấy orderId ra, check xem có phải là KH nó thah toán lại hay ko hay cái này lần đầu xuất hiện dưới DB
-
-
-        // bỏ vào DB payment trước sau đó mới gọi VNPAY/Momo để tạo url thanh toán
-        if (payment.getDiscountId()==0)
-        {
-            System.out.println("discount deo co");
-
-        }
-        else
-        {
-            //Neu co discountId thi set discount cho cai payment
-            payment.setDiscountValue(discountService.getDiscountById(payment.getDiscountId()).getDiscount());
-            total = payment.getAmount() - payment.getAmount()/100*discountService.getDiscountById(payment.getDiscountId()).getDiscount();
-        }
         paymentService.processPayment(payment);
-
-        if (payment.getPaymentMethod() == Payment.PaymentMethod.VNPAY) {
-             url = vnpayService.createVnpayUrl(String.valueOf(payment.getId()), total, "");
-        }
-        else if (payment.getPaymentMethod() == Payment.PaymentMethod.MOMO)
-        {
-            url = momoService.createPaymentRequest(total, String.valueOf(payment.getId()));
-        }
-
         return url;
     }
 

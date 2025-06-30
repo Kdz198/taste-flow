@@ -1,6 +1,7 @@
 package tasteflow.paymentservice.service;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -74,8 +75,8 @@ public class MomoService {
                 entity,
                 String.class
         );
-        System.out.println("Response from MoMo: " + response.getBody());
-        return response.getBody();
+        MomoPaymentResponse paymentResponse = new ObjectMapper().readValue(response.getBody(), MomoPaymentResponse.class);
+        return paymentResponse.payUrl;
     }
 
     // HMAC SHA256 signing method
@@ -93,6 +94,18 @@ public class MomoService {
         }
         return hexString.toString();
     }
+
+    public record MomoPaymentResponse(
+            String partnerCode,
+            String orderId,
+            String requestId,
+            long amount,
+            long responseTime,
+            String message,
+            int resultCode,
+            String payUrl,
+            String shortLink
+    ) {}
 
     public record MomoPaymentRequest(
             String partnerCode,
