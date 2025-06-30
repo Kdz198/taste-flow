@@ -45,7 +45,7 @@ public class PaymentService {
             }
         }
         // bỏ vào DB payment trước sau đó mới gọi VNPAY/Momo để tạo url thanh toán
-        if (payment.getDiscountId()==0)
+        if (payment.getDiscountCode() == null)
         {
             System.out.println("discount deo co");
 
@@ -53,8 +53,9 @@ public class PaymentService {
         else
         {
             //Neu co discountId thi set discount cho cai payment
-            payment.setDiscountValue(discountService.getDiscountById(payment.getDiscountId()).getDiscount());
-            total = payment.getAmount() - payment.getAmount()/100*discountService.getDiscountById(payment.getDiscountId()).getDiscount();
+            payment.setDiscountValue(discountService.findByDiscountCode(payment.getDiscountCode()).getDiscount());
+
+            total = payment.getAmount() - payment.getAmount()/100*discountService.findByDiscountCode(payment.getDiscountCode()).getDiscount();
         }
 
         if (payment.getPaymentMethod() == Payment.PaymentMethod.VNPAY) {

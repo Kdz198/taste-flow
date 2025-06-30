@@ -37,7 +37,7 @@ public class Payment {
     @Column(nullable = false)
     private int amount;
 
-    private int discountId;
+    private String discountCode;
 
     private int discountValue;
 

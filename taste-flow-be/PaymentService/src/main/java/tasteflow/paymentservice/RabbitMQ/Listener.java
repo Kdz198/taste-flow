@@ -10,8 +10,7 @@ public class Listener {
 
 
 
-   // @RabbitListener(queues = "ExchangecuaInventory")
-    public void confirmOrder(int orderId) {
-
+   // @RabbitListener(queues = "order.exchange")
+    public void confirmOrder(OrderEvent order) {
     }
 }

@@ -38,11 +38,12 @@ public class OrderService {
         return saveOrder;
     }
 
-    // sau khi nhận event lock kho thì đổi state
+    // sau khi nhận event lock kho thì đổi state & bắn sự kiện cho payment tạo url
     public void confirmOrder (int orderId) {
         Order order  = orderRepository.findById(orderId).orElseThrow();
         order.setStatus(Order.OrderStatus.CONFIRMED);
         orderRepository.save(order);
+        producer.confirmOrder(order);
     }
 
     public Order cancleOrder(int orderId) {
