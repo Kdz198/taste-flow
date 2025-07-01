@@ -1,35 +1,14 @@
 "use client";
 import { categoryMock, dishMock } from "@/app/utils/mockApi";
 import { Dish, UserStatus } from "@/app/utils/type";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Modal } from "@/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  ArrowUpDown,
-  BookOpen,
-  ChefHat,
-  Clock,
-  DollarSign,
-  Edit2,
-  Filter,
-  Grid3X3,
-  ImageIcon,
-  List,
-  MapPin,
-  MoreHorizontal,
-  Package,
-  Plus,
-  Search,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { ArrowUpDown, ChefHat, Filter, Grid3X3, List, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import DishModal from "./modal";
+import DishTable from "./table";
 
 // Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
@@ -353,14 +332,24 @@ export default function DishPage() {
 
   const stats = getStatistics();
 
+  // Update the statistics cards with the actual values
+  useEffect(() => {
+    const totalElement = document.getElementById("dish-total-count");
+    const activeElement = document.getElementById("dish-active-count");
+    const inactiveElement = document.getElementById("dish-inactive-count");
+    const avgPriceElement = document.getElementById("dish-avg-price");
+
+    if (totalElement) totalElement.textContent = stats.total.toString();
+    if (activeElement) activeElement.textContent = stats.active.toString();
+    if (inactiveElement) inactiveElement.textContent = stats.inactive.toString();
+    if (avgPriceElement) avgPriceElement.textContent = `$${stats.avgPrice.toFixed(2)}`;
+  }, [stats]);
+
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">Dish Management</h1>
-          <p className="text-gray-400 mt-1">Create and manage your delicious menu items</p>
-        </div>
+      {/* Header Section và Statistics Cards đã được chuyển sang layout.tsx */}
+
+      <div className="flex justify-end">
         <Button
           onClick={() => setIsModalOpen(true)}
           disabled={isLoading}
@@ -369,53 +358,6 @@ export default function DishPage() {
           <Plus className="w-4 h-4 mr-2" />
           Add New Dish
         </Button>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A] hover:border-orange-500/50 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Total Dishes</CardTitle>
-            <ChefHat className="h-4 w-4 text-orange-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.total}</div>
-            <p className="text-xs text-gray-400 mt-1">Menu items available</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A] hover:border-green-500/50 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Active Dishes</CardTitle>
-            <Star className="h-4 w-4 text-green-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-400">{stats.active}</div>
-            <p className="text-xs text-gray-400 mt-1">Available for order</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A] hover:border-red-500/50 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Inactive Dishes</CardTitle>
-            <Package className="h-4 w-4 text-red-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-400">{stats.inactive}</div>
-            <p className="text-xs text-gray-400 mt-1">Currently unavailable</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A] hover:border-blue-500/50 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Avg. Price</CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-400">${stats.avgPrice.toFixed(2)}</div>
-            <p className="text-xs text-gray-400 mt-1">Average dish price</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Error Display */}
@@ -497,7 +439,7 @@ export default function DishPage() {
         </CardContent>
       </Card>
 
-      {/* Dishes Display */}
+      {/* Dishes Table (tách ra component) */}
       <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
@@ -506,328 +448,30 @@ export default function DishPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading && !dishes.length ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="text-gray-400">Loading delicious dishes...</div>
-            </div>
-          ) : filteredDishes.length === 0 ? (
-            <div className="text-center py-12">
-              <ChefHat className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg mb-2">No dishes found</p>
-              <p className="text-sm text-gray-500">
-                {searchTerm ? "Try adjusting your search criteria" : "Start by adding your first dish to the menu"}
-              </p>
-            </div>
-          ) : viewMode === "grid" ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredDishes.map((dish) => (
-                <Card key={dish.id} className="bg-[#2A2A2A] border-[#3A3A3A] hover:border-orange-500/50 transition-all duration-300 group">
-                  <CardContent className="p-0">
-                    <div className="relative">
-                      {dish.image ? (
-                        <img src={dish.image} alt={dish.name} className="w-full h-48 object-cover rounded-t-lg" />
-                      ) : (
-                        <div className="w-full h-48 bg-gradient-to-br from-gray-600 to-gray-800 rounded-t-lg flex items-center justify-center">
-                          <ImageIcon className="w-12 h-12 text-gray-400" />
-                        </div>
-                      )}
-
-                      <div className="absolute top-4 right-4">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" size="icon" className="h-8 w-8 bg-black/50 hover:bg-black/70 border-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-[#2A2A2A] border-[#3A3A3A]">
-                            <DropdownMenuItem onClick={() => handleEdit(dish)} className="text-white hover:bg-[#3A3A3A]">
-                              <Edit2 className="w-4 h-4 mr-2" />
-                              Edit Dish
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDelete(dish.id)} className="text-red-400 hover:bg-red-600/20">
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      <div className="absolute top-4 left-4">
-                        <Badge variant={dish.status === UserStatus.ACTIVE ? "default" : "secondary"}>{dish.status}</Badge>
-                      </div>
-                    </div>
-
-                    <div className="p-6">
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="font-semibold text-white text-lg group-hover:text-orange-400 transition-colors">{dish.name}</h3>
-                        <div className="text-2xl font-bold text-orange-400">${dish.price ? dish.price.toFixed(2) : "0.00"}</div>
-                      </div>
-
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                          <MapPin className="w-4 h-4" />
-                          {getCategoryNames(dish.category || [])}
-                        </div>
-
-                        {dish.receipt && dish.receipt.length > 0 && (
-                          <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <BookOpen className="w-4 h-4" />
-                            {dish.receipt.slice(0, 2).join(", ")}
-                            {dish.receipt.length > 2 && ` +${dish.receipt.length - 2} more`}
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                          <Clock className="w-4 h-4" />
-                          ID: {dish.id}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredDishes.map((dish) => (
-                <Card key={dish.id} className="bg-[#2A2A2A] border-[#3A3A3A] hover:border-orange-500/50 transition-colors">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="w-16 h-16">
-                        {dish.image ? (
-                          <img src={dish.image} alt={dish.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
-                            <ChefHat className="w-8 h-8" />
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-semibold text-white text-lg">{dish.name}</h3>
-                          <div className="text-xl font-bold text-orange-400">${dish.price ? dish.price.toFixed(2) : "0.00"}</div>
-                        </div>
-
-                        <div className="flex items-center gap-4 text-sm text-gray-400 mb-3">
-                          <span>ID: {dish.id}</span>
-                          <span>Categories: {getCategoryNames(dish.category || [])}</span>
-                          {dish.receipt && dish.receipt.length > 0 && <span>Ingredients: {dish.receipt.length} items</span>}
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <Badge variant={dish.status === UserStatus.ACTIVE ? "default" : "secondary"}>{dish.status}</Badge>
-
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(dish)}
-                              disabled={isLoading}
-                              className="bg-[#3A3A3A] border-[#4A4A4A] hover:bg-[#4A4A4A]"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button variant="destructive" size="sm" onClick={() => handleDelete(dish.id)} disabled={isLoading}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <DishTable
+            dishes={filteredDishes}
+            categories={categories}
+            isLoading={isLoading}
+            searchTerm={searchTerm}
+            viewMode={viewMode}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
+          />
         </CardContent>
       </Card>
 
-      {/* Enhanced Modal */}
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedDish?.id ? "Edit Dish" : "Create New Dish"} className="max-w-4xl">
-        <div className="space-y-6">
-          {/* Validation Errors */}
-          {validationErrors.length > 0 && (
-            <Card className="bg-red-600/20 border-red-600">
-              <CardContent className="pt-4">
-                <ul className="text-red-400 text-sm space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <div className="w-1 h-1 bg-red-400 rounded-full" />
-                      {error}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column - Basic Info */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name" className="text-white flex items-center gap-2">
-                  <ChefHat className="w-4 h-4" />
-                  Dish Name *
-                </Label>
-                <Input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter delicious dish name"
-                  className="mt-1 bg-[#2A2A2A] border-[#3A3A3A] text-white"
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="price" className="text-white flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  Price *
-                </Label>
-                <Input
-                  id="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                  placeholder="0.00"
-                  className="mt-1 bg-[#2A2A2A] border-[#3A3A3A] text-white"
-                  disabled={isLoading}
-                  step="0.01"
-                  min="0.01"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label className="text-white flex items-center gap-2">
-                  <Star className="w-4 h-4" />
-                  Status
-                </Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value as UserStatus })}
-                  disabled={isLoading}
-                >
-                  <SelectTrigger className="mt-1 bg-[#2A2A2A] border-[#3A3A3A] text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                    {Object.values(UserStatus).map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="image" className="text-white flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4" />
-                  Image URL
-                </Label>
-                <Input
-                  id="image"
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="https://example.com/dish-image.jpg"
-                  className="mt-1 bg-[#2A2A2A] border-[#3A3A3A] text-white"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            {/* Right Column - Categories & Ingredients */}
-            <div className="space-y-4">
-              <div>
-                <Label className="text-white flex items-center gap-2">
-                  <Package className="w-4 h-4" />
-                  Categories
-                </Label>
-                <select
-                  multiple
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      category: Array.from(e.target.selectedOptions, (option) => option.value),
-                    })
-                  }
-                  className="mt-1 w-full p-3 bg-[#2A2A2A] border border-[#3A3A3A] rounded-md text-white min-h-[120px] focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
-                  disabled={isLoading}
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id} className="py-2 px-3 hover:bg-[#3A3A3A]">
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-400 mt-1">Hold Ctrl/Cmd to select multiple categories</p>
-              </div>
-
-              <div>
-                <Label htmlFor="receipt" className="text-white flex items-center gap-2">
-                  <BookOpen className="w-4 h-4" />
-                  Ingredients
-                </Label>
-                <Input
-                  id="receipt"
-                  type="text"
-                  value={formData.receipt.join(", ")}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      receipt: e.target.value
-                        .split(",")
-                        .map((item) => item.trim())
-                        .filter((item) => item !== ""),
-                    })
-                  }
-                  placeholder="Tomato, Cheese, Basil, Olive Oil"
-                  className="mt-1 bg-[#2A2A2A] border-[#3A3A3A] text-white"
-                  disabled={isLoading}
-                />
-                <p className="text-xs text-gray-400 mt-1">Separate ingredients with commas</p>
-              </div>
-
-              {/* Image Preview */}
-              {formData.image && (
-                <div>
-                  <Label className="text-white">Preview</Label>
-                  <div className="mt-1 border border-[#3A3A3A] rounded-lg p-2 bg-[#2A2A2A]">
-                    <img
-                      src={formData.image}
-                      alt="Dish preview"
-                      className="w-full h-32 object-cover rounded"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Modal Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-[#2A2A2A]">
-            <Button variant="outline" onClick={handleCloseModal} disabled={isLoading} className="bg-[#2A2A2A] border-[#3A3A3A] hover:bg-[#3A3A3A]">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isLoading || !formData.name.trim() || formData.price <= 0}
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-            >
-              {isLoading ? "Saving..." : selectedDish?.id ? "Update Dish" : "Create Dish"}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {/* Modal (tách ra component) */}
+      <DishModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSave}
+        formData={formData}
+        setFormData={setFormData}
+        validationErrors={validationErrors}
+        isLoading={isLoading}
+        selectedDish={selectedDish}
+        categories={categories}
+      />
     </div>
   );
 }

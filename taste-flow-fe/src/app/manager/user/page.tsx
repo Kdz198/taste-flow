@@ -1,34 +1,14 @@
 "use client";
 import { userMock } from "@/app/utils/mockApi";
 import { User, UserRole, UserStatus } from "@/app/utils/type";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Modal } from "@/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  ArrowUpDown,
-  Calendar,
-  Edit2,
-  Eye,
-  Filter,
-  Mail,
-  MapPin,
-  MoreHorizontal,
-  Phone,
-  Plus,
-  Search,
-  Shield,
-  Trash2,
-  UserCheck,
-  Users,
-  UserX,
-} from "lucide-react";
+import { ArrowUpDown, Filter, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import UserModal from "./modal";
+import UserTable from "./table";
 
 // Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
@@ -87,7 +67,13 @@ class UserApiService {
   static async fetchUsers(): Promise<User[]> {
     if (USE_MOCK_DATA) {
       // Mock implementation
-      return Promise.resolve(userMock);
+      return Promise.resolve(
+        userMock.map((u) => ({
+          ...u,
+          status: u.status as UserStatus,
+          role: u.role as UserRole,
+        }))
+      );
     }
 
     // Real API implementation
@@ -340,26 +326,6 @@ export default function UserPage() {
     setError(null);
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const getRoleBadgeVariant = (role: UserRole) => {
-    switch (role) {
-      case UserRole.ADMIN:
-        return "destructive";
-      case UserRole.MANAGER:
-        return "default";
-      default:
-        return "secondary";
-    }
-  };
-
   const getStatistics = () => {
     const total = users.length;
     const active = users.filter((user) => user.status === UserStatus.ACTIVE).length;
@@ -371,14 +337,24 @@ export default function UserPage() {
 
   const stats = getStatistics();
 
+  // Update the statistics cards with the actual values
+  useEffect(() => {
+    const totalElement = document.getElementById("user-total-count");
+    const activeElement = document.getElementById("user-active-count");
+    const managersElement = document.getElementById("user-managers-count");
+    const customersElement = document.getElementById("user-customers-count");
+
+    if (totalElement) totalElement.textContent = stats.total.toString();
+    if (activeElement) activeElement.textContent = stats.active.toString();
+    if (managersElement) managersElement.textContent = stats.managers.toString();
+    if (customersElement) customersElement.textContent = stats.customers.toString();
+  }, [stats]);
+
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">User Management</h1>
-          <p className="text-gray-400 mt-1">Manage user accounts and permissions</p>
-        </div>
+      {/* Header Section và Statistics Cards đã được chuyển sang layout.tsx */}
+
+      <div className="flex justify-end">
         <Button
           onClick={() => setIsModalOpen(true)}
           disabled={isLoading}
@@ -387,49 +363,6 @@ export default function UserPage() {
           <Plus className="w-4 h-4 mr-2" />
           Add User
         </Button>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-gray-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.total}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Active Users</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-400">{stats.active}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Managers</CardTitle>
-            <Shield className="h-4 w-4 text-blue-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-400">{stats.managers}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Customers</CardTitle>
-            <UserX className="h-4 w-4 text-purple-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-400">{stats.customers}</div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Error Display */}
@@ -498,248 +431,34 @@ export default function UserPage() {
         </CardContent>
       </Card>
 
-      {/* Users Grid/List */}
+      {/* Users Table (tách ra component) */}
       <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
         <CardHeader>
           <CardTitle className="text-white">Users ({filteredUsers.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading && !users.length ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="text-gray-400">Loading users...</div>
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-12">
-              <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400">No users found</p>
-              {searchTerm && <p className="text-sm text-gray-500 mt-2">Try adjusting your search or filter criteria</p>}
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredUsers.map((user) => (
-                <Card key={user.id} className="bg-[#2A2A2A] border-[#3A3A3A] hover:bg-[#323232] transition-colors">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-12 h-12">
-                          <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold">
-                            {getInitials(user.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-semibold text-white">{user.name}</h3>
-                          <p className="text-sm text-gray-400">ID: {user.id}</p>
-                        </div>
-                      </div>
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-[#2A2A2A] border-[#3A3A3A]">
-                          <DropdownMenuItem onClick={() => handleEdit(user)} className="text-white hover:bg-[#3A3A3A]">
-                            <Edit2 className="w-4 h-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(user.id)} className="text-red-400 hover:bg-red-600/20">
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Mail className="w-4 h-4 text-gray-400" />
-                        {user.email}
-                      </div>
-                      {user.phone && (
-                        <div className="flex items-center gap-2 text-sm text-gray-300">
-                          <Phone className="w-4 h-4 text-gray-400" />
-                          {user.phone}
-                        </div>
-                      )}
-                      {user.address && (
-                        <div className="flex items-center gap-2 text-sm text-gray-300">
-                          <MapPin className="w-4 h-4 text-gray-400" />
-                          {user.address}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-2">
-                        <Badge variant={user.status === UserStatus.ACTIVE ? "default" : "secondary"}>{user.status}</Badge>
-                        <Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <UserTable
+            users={users}
+            filteredUsers={filteredUsers}
+            isLoading={isLoading}
+            searchTerm={searchTerm}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </CardContent>
       </Card>
 
-      {/* Modal */}
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedUser?.id ? "Edit User" : "Add New User"} className="max-w-2xl">
-        <div className="space-y-6">
-          {/* Validation Errors */}
-          {validationErrors.length > 0 && (
-            <Card className="bg-red-600/20 border-red-600">
-              <CardContent className="pt-4">
-                <ul className="text-red-400 text-sm space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index}>• {error}</li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-white">
-                Full Name *
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter full name"
-                className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
-                disabled={isLoading}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-white">
-                Email Address *
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="Enter email address"
-                className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
-                disabled={isLoading}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-white">
-                {selectedUser ? "New Password (optional)" : "Password *"}
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder={selectedUser ? "Leave empty to keep current" : "Enter password"}
-                className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
-                disabled={isLoading}
-                required={!selectedUser}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-white">
-                Phone Number
-              </Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Enter phone number"
-                className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status" className="text-white">
-                Status
-              </Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value as UserStatus })}
-                disabled={isLoading}
-              >
-                <SelectTrigger className="bg-[#2A2A2A] border-[#3A3A3A] text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                  {Object.values(UserStatus).map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role" className="text-white">
-                Role
-              </Label>
-              <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value as UserRole })} disabled={isLoading}>
-                <SelectTrigger className="bg-[#2A2A2A] border-[#3A3A3A] text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                  {Object.values(UserRole).map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="address" className="text-white">
-              Address
-            </Label>
-            <Input
-              id="address"
-              type="text"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="Enter address"
-              className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Modal Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-[#2A2A2A]">
-            <Button variant="outline" onClick={handleCloseModal} disabled={isLoading} className="bg-[#2A2A2A] border-[#3A3A3A] hover:bg-[#3A3A3A]">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isLoading || !formData.name.trim() || !formData.email.trim()}
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-            >
-              {isLoading ? "Saving..." : selectedUser?.id ? "Update User" : "Create User"}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {/* Modal (tách ra component) */}
+      <UserModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSave}
+        formData={formData}
+        setFormData={setFormData}
+        validationErrors={validationErrors}
+        isLoading={isLoading}
+        selectedUser={selectedUser}
+      />
     </div>
   );
 }
