@@ -1,14 +1,11 @@
 "use client";
 import { categoryMock } from "@/app/utils/mockApi";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Modal } from "@/components/ui/modal";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpDown, Edit2, Eye, Filter, Plus, Search, Trash2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import CategoryModal from "./modal";
+import CategoryTable from "./table";
 
 // Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
@@ -304,12 +301,8 @@ export default function CategoryPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">Category Management</h1>
-          <p className="text-gray-400 mt-1">Manage your food categories and organize your menu</p>
-        </div>
+      {/* Header Section đã được chuyển sang layout.tsx */}
+      <div className="flex justify-end">
         <Button
           onClick={() => setIsModalOpen(true)}
           disabled={isLoading}
@@ -318,36 +311,6 @@ export default function CategoryPage() {
           <Plus className="w-4 h-4 mr-2" />
           Add Category
         </Button>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">Total Categories</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-white">{stats.total}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">Active Categories</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-green-400">{stats.active}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">Inactive Categories</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-red-400">{stats.inactive}</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Error Display */}
@@ -364,175 +327,26 @@ export default function CategoryPage() {
         </Card>
       )}
 
-      {/* Filters and Search */}
-      <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Search categories..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-[#2A2A2A] border-[#3A3A3A] text-white"
-              />
-            </div>
+      {/* Categories Table (tách ra component) */}
+      <CategoryTable
+        categories={filteredCategories}
+        isLoading={isLoading}
+        searchTerm={searchTerm}
+        handleEdit={handleEdit}
+        handleDelete={handleDelete}
+      />
 
-            <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-32 bg-[#2A2A2A] border-[#3A3A3A] text-white">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                className="bg-[#2A2A2A] border-[#3A3A3A] hover:bg-[#3A3A3A]"
-              >
-                <ArrowUpDown className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Categories Table */}
-      <Card className="bg-[#1A1A1A] border-[#2A2A2A]">
-        <CardHeader>
-          <CardTitle className="text-white">Categories ({filteredCategories.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading && !categories.length ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="text-gray-400">Loading categories...</div>
-            </div>
-          ) : filteredCategories.length === 0 ? (
-            <div className="text-center py-12">
-              <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400">No categories found</p>
-              {searchTerm && <p className="text-sm text-gray-500 mt-2">Try adjusting your search or filter criteria</p>}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-[#2A2A2A]">
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium">ID</th>
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Name</th>
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Status</th>
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCategories.map((category) => (
-                    <tr key={category.id} className="border-b border-[#2A2A2A] hover:bg-[#2A2A2A]/50 transition-colors">
-                      <td className="py-4 px-4 text-gray-300 font-mono text-sm">{category.id}</td>
-                      <td className="py-4 px-4">
-                        <div className="font-medium text-white">{category.name}</div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Badge variant={category.status ? "default" : "secondary"}>{category.status ? "Active" : "Inactive"}</Badge>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(category)}
-                            disabled={isLoading}
-                            className="bg-[#2A2A2A] border-[#3A3A3A] hover:bg-[#3A3A3A]"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button variant="destructive" size="sm" onClick={() => handleDelete(category.id)} disabled={isLoading}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Modal */}
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedCategory?.id ? "Edit Category" : "Add New Category"} className="max-w-lg">
-        <div className="space-y-6">
-          {/* Validation Errors */}
-          {validationErrors.length > 0 && (
-            <Card className="bg-red-600/20 border-red-600">
-              <CardContent className="pt-4">
-                <ul className="text-red-400 text-sm space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index}>• {error}</li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Form Fields */}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name" className="text-white">
-                Category Name *
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter category name"
-                className="mt-1 bg-[#2A2A2A] border-[#3A3A3A] text-white"
-                disabled={isLoading}
-                required
-              />
-            </div>
-
-            <div>
-              <Label className="text-white">Status</Label>
-              <Select
-                value={formData.status ? "active" : "inactive"}
-                onValueChange={(value) => setFormData({ ...formData, status: value === "active" })}
-                disabled={isLoading}
-              >
-                <SelectTrigger className="mt-1 bg-[#2A2A2A] border-[#3A3A3A] text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Modal Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-[#2A2A2A]">
-            <Button variant="outline" onClick={handleCloseModal} disabled={isLoading} className="bg-[#2A2A2A] border-[#3A3A3A] hover:bg-[#3A3A3A]">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isLoading || !formData.name.trim()}
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-            >
-              {isLoading ? "Saving..." : selectedCategory?.id ? "Update Category" : "Create Category"}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {/* Modal (tách ra component) */}
+      <CategoryModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSave}
+        formData={formData}
+        setFormData={setFormData}
+        validationErrors={validationErrors}
+        isLoading={isLoading}
+        selectedCategory={selectedCategory}
+      />
     </div>
   );
 }
