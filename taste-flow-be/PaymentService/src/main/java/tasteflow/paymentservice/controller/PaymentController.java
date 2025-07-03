@@ -40,14 +40,20 @@ public class PaymentController {
     }
 
 
-
     @PostMapping()
-    public String createPayment(@RequestBody Payment payment) throws Exception {
-        String url ="";
-        int total = payment.getAmount();
-
-        paymentService.processPayment(payment);
-        return url;
+    public String confirmPayment ( @RequestParam int orderId,@RequestParam String paymentMethod,@RequestParam String discountCode) throws Exception {
+        return paymentService.confirmPayment(orderId,paymentMethod,discountCode);
     }
+
+
+
+//    @PostMapping()
+//    public String createPayment(@RequestBody Payment payment) throws Exception {
+//        String url ="";
+//        int total = payment.getAmount();
+//
+//        paymentService.processPayment(payment);
+//        return url;
+//    }
 
 }

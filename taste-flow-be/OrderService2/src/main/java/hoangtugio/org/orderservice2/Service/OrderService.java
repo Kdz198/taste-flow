@@ -7,7 +7,6 @@ import hoangtugio.org.orderservice2.Model.RequestOrderDTO;
 import hoangtugio.org.orderservice2.RabbitMQ.Producer.Producer;
 import hoangtugio.org.orderservice2.Repository.OrderItemRepository;
 import hoangtugio.org.orderservice2.Repository.OrderRepository;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

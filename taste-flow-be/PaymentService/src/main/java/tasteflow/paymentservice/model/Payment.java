@@ -41,14 +41,15 @@ public class Payment {
 
     private int discountValue;
 
+    @Column(columnDefinition = "NVARCHAR(MAX)")
+    String url;
+
     @NotNull(message = "Status is mandatory")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus status = PaymentStatus.PENDING;
 
-    @NotNull(message = "Payment method is mandatory")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private PaymentMethod paymentMethod;
 
     @Size(max = 50, message = "Transaction ID must not exceed 50 characters")

@@ -1,10 +1,12 @@
 package hoangtugio.org.orderservice2.Service;
 
 
+import hoangtugio.org.orderservice2.Controller.CartController;
 import hoangtugio.org.orderservice2.Model.Cart;
 import hoangtugio.org.orderservice2.Repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,22 +17,28 @@ public class CartService {
     @Autowired
     CartRepository cartRepository;
 
-    public Cart addToCart( int userId,int dishId, int quantity ) {
+
+    @Transactional
+    public Cart addToCart(int userId, Map<Integer, Integer> itemsToAdd) {
         Cart cart;
-        if ( cartRepository.existsById( userId ) ) {
-            cart = cartRepository.findById( userId ).orElse( null );
-            Map <Integer,Integer> map = cart.getItems();
-            map.put( dishId, map.getOrDefault( dishId, 0) + quantity );
-        }
-        else
-        {
+        if (cartRepository.existsById(userId)) {
+
+            cart = cartRepository.findById(userId).orElseThrow(() -> new RuntimeException("Cart not found"));
+            Map<Integer, Integer> existingItems = cart.getItems();
+
+            // Merge new items into existing cart
+            for (Map.Entry<Integer, Integer> entry : itemsToAdd.entrySet()) {
+                int dishId = entry.getKey();
+                int quantity = entry.getValue();
+                existingItems.put(dishId, existingItems.getOrDefault(dishId, 0) + quantity);
+            }
+        } else {
             cart = new Cart();
-            cart.setUserId( userId );
-            Map <Integer,Integer> map =  new HashMap<>();
-            map.put( dishId, quantity );
-            cart.setItems( map );
+            cart.setUserId(userId);
+            cart.setItems(new HashMap<>(itemsToAdd));
         }
-        return cartRepository.save( cart );
+
+        return cartRepository.save(cart);
     }
 
     public Cart removeFromCart( int userId, Map<Integer, Integer> itemsToRemove ) {
