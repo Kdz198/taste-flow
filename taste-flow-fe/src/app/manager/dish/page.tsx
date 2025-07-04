@@ -1,6 +1,5 @@
 "use client";
-import { categoryMock, dishMock } from "@/app/utils/mockApi";
-import { Dish, UserStatus } from "@/app/utils/type";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,8 @@ import { ArrowUpDown, ChefHat, Filter, Grid3X3, List, Plus, Search } from "lucid
 import { useEffect, useState } from "react";
 import DishModal from "./modal";
 import DishTable from "./table";
+import { dishMock, categoryMock } from "@/utils/mockApi";
+import { UserStatus, Dish } from "@/utils/type";
 
 // Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
@@ -78,9 +79,9 @@ class DishApiService {
   }
 
   static async fetchDishes(): Promise<Dish[]> {
-    if (USE_MOCK_DATA) {
-      return Promise.resolve(dishMock);
-    }
+    // if (USE_MOCK_DATA) {
+    //   return Promise.resolve(dishMock);
+    // }
     return this.makeRequest<Dish[]>("/api/dishes");
   }
 

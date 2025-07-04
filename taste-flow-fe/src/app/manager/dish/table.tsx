@@ -1,9 +1,10 @@
-import { Dish, UserStatus } from "@/app/utils/type";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dish, UserStatus } from "@/utils/type";
 import { BookOpen, ChefHat, Clock, Edit2, ImageIcon, MapPin, MoreHorizontal, Trash2 } from "lucide-react";
 import React from "react";
 

@@ -4,7 +4,7 @@ import { Category } from "@/schemaValidations/category-schema";
 
 
 
-const categoryApi = {
+const categoryRequest = {
     getCategoryList: () => http.get<Category[]>("/category"),
 };
-export default categoryApi;
+export default categoryRequest;

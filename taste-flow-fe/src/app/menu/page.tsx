@@ -1,10 +1,11 @@
 import productApiRequest from "@/apiRequest/product";
-import categoryApi from "@/apiRequest/category";
+
 import MenuContent from "./_components/MenuContent";
+import categoryRequest from "@/apiRequest/category";
 
 export default async function MenuPage() {
     const product = await productApiRequest.getList();
-    const categories = await categoryApi.getCategoryList();
+    const categories = await categoryRequest.getCategoryList();
 
     return (
         <div className="text-white min-h-screen bg-gradient-to-br from-[#1A1A1A] to-[#2A2A2A]">

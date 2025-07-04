@@ -1,10 +1,11 @@
-import { UserStatus } from "@/app/utils/type";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UserStatus } from "@/utils/type";
 import { BookOpen, ChefHat, DollarSign, ImageIcon, Package, Star } from "lucide-react";
 import React from "react";
 
