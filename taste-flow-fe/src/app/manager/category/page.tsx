@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { categoryMock } from "@/app/utils/mockApi";
+import { categoryMock } from "@/utils/mockApi";
 
 // Comment: Mock API - Will be replaced with backend API later
 const fetchCategories = async () => {

@@ -30,7 +30,7 @@ public class UserController {
         return  userRepository.findByEmail(auth.getName()).toString();
     }
 
-    @PostMapping
+    @PostMapping("/login")
     public User createUser(@Valid @RequestBody User user) {
         return userService.save(user);
     }
