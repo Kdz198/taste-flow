@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tasteflow.paymentservice.model.Payment;
+import tasteflow.paymentservice.model.UrlPayment;
+import tasteflow.paymentservice.repository.UrlPaymentRepository;
 import tasteflow.paymentservice.service.PaymentService;
 
 import java.util.HashMap;
@@ -19,6 +21,9 @@ public class MomoController {
 
     @Autowired
     private PaymentService paymentService;
+
+    @Autowired
+    UrlPaymentRepository urlPaymentRepository;
 
     @GetMapping("/momo-return")
     public ResponseEntity<Map<String, Object>> handleMomoReturn(@RequestParam Map<String, String> params) {
@@ -51,6 +56,10 @@ public class MomoController {
             payment.setTransactionId(transId);
             payment.setPaymentMethod(Payment.PaymentMethod.MOMO);
             paymentService.updatePayment(payment);
+
+            UrlPayment urlPayment = urlPaymentRepository.findById(payment.getOrderId()).orElse(null);
+            urlPayment.setUsed(true);
+            urlPaymentRepository.save(urlPayment);
         }
         else
         {

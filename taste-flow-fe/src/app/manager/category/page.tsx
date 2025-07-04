@@ -1,176 +1,283 @@
 "use client";
-import { useState, useEffect } from "react";
+import { categoryMock } from "@/app/utils/mockApi";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Modal } from "@/components/ui/modal";
-import { categoryMock } from "@/utils/mockApi";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import CategoryModal from "./modal";
+import CategoryTable from "./table";
 
-// Comment: Mock API - Will be replaced with backend API later
-const fetchCategories = async () => {
-  return Promise.resolve(categoryMock);
-  
-  // Uncomment when backend is ready:
-  /*
-  try {
-    const response = await fetch('/api/categories');
-    if (!response.ok) throw new Error('Failed to fetch categories');
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return [];
-  }
-  */
+// Configuration
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" || true; // Set to false when backend is ready
+
+// Token management (replace with your auth solution)
+const getAuthToken = (): string | null => {
+  // Replace this with your actual token retrieval logic
+  return localStorage.getItem("authToken") || null;
+  // return 'your-bearer-token-here'; // For testing
 };
 
-// Comment: Create category API - Will be implemented when backend is ready
-const createCategory = async (categoryData) => {
-  // Mock implementation - just return the data with a generated ID
-  return Promise.resolve({ 
-    id: Date.now().toString(), 
-    ...categoryData 
-  });
-  
-  // Uncomment when backend is ready:
-  /*
-  try {
-    const response = await fetch('/api/categories', {
-      method: 'POST',
+// Types
+interface Category {
+  id: string;
+  name: string;
+  status: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface CategoryFormData {
+  name: string;
+  status: boolean;
+}
+
+// API Service Layer
+class CategoryApiService {
+  private static async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const token = getAuthToken();
+    const url = `${API_BASE_URL}${endpoint}`;
+
+    const defaultHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      defaultHeaders.Authorization = `Bearer ${token}`;
+    }
+
+    const config: RequestInit = {
+      ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
+        ...options.headers,
       },
+    };
+
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorData || response.statusText}`);
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return await response.json();
+      }
+
+      return response.text() as unknown as T;
+    } catch (error) {
+      console.error(`API Error for ${endpoint}:`, error);
+      throw error;
+    }
+  }
+
+  static async fetchCategories(): Promise<Category[]> {
+    if (USE_MOCK_DATA) {
+      // Mock implementation
+      return Promise.resolve(
+        categoryMock.map((cat) => ({
+          ...cat,
+          status: cat.status ?? true, // Normalize data
+        }))
+      );
+    }
+
+    // Real API implementation
+    return this.makeRequest<Category[]>("/api/categories");
+  }
+
+  static async createCategory(categoryData: Omit<Category, "id" | "createdAt" | "updatedAt">): Promise<Category> {
+    if (USE_MOCK_DATA) {
+      // Mock implementation
+      return Promise.resolve({
+        id: Date.now().toString(),
+        ...categoryData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    // Real API implementation
+    return this.makeRequest<Category>("/api/categories", {
+      method: "POST",
       body: JSON.stringify(categoryData),
     });
-    if (!response.ok) throw new Error('Failed to create category');
-    return await response.json();
-  } catch (error) {
-    console.error('Error creating category:', error);
-    throw error;
   }
-  */
-};
 
-// Comment: Update category API - Will be implemented when backend is ready
-const updateCategory = async (id, categoryData) => {
-  // Mock implementation - just return the updated data
-  return Promise.resolve({ id, ...categoryData });
-  
-  // Uncomment when backend is ready:
-  /*
-  try {
-    const response = await fetch(`/api/categories/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+  static async updateCategory(id: string, categoryData: Omit<Category, "id" | "createdAt" | "updatedAt">): Promise<Category> {
+    if (USE_MOCK_DATA) {
+      // Mock implementation
+      return Promise.resolve({
+        id,
+        ...categoryData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    // Real API implementation
+    return this.makeRequest<Category>(`/api/categories/${id}`, {
+      method: "PUT",
       body: JSON.stringify(categoryData),
     });
-    if (!response.ok) throw new Error('Failed to update category');
-    return await response.json();
-  } catch (error) {
-    console.error('Error updating category:', error);
-    throw error;
   }
-  */
-};
 
-// Comment: Delete category API - Will be implemented when backend is ready
-const deleteCategory = async (id) => {
-  // Mock implementation - just return success
-  return Promise.resolve({ success: true });
-  
-  // Uncomment when backend is ready:
-  /*
-  try {
-    const response = await fetch(`/api/categories/${id}`, {
-      method: 'DELETE',
+  static async deleteCategory(id: string): Promise<{ success: boolean }> {
+    if (USE_MOCK_DATA) {
+      // Mock implementation
+      return Promise.resolve({ success: true });
+    }
+
+    // Real API implementation
+    return this.makeRequest<{ success: boolean }>(`/api/categories/${id}`, {
+      method: "DELETE",
     });
-    if (!response.ok) throw new Error('Failed to delete category');
-    return await response.json();
-  } catch (error) {
-    console.error('Error deleting category:', error);
-    throw error;
   }
-  */
+}
+
+// Form validation
+const validateCategoryForm = (formData: CategoryFormData): string[] => {
+  const errors: string[] = [];
+
+  if (!formData.name.trim()) {
+    errors.push("Category name is required");
+  } else if (formData.name.trim().length < 2) {
+    errors.push("Category name must be at least 2 characters long");
+  }
+
+  return errors;
 };
 
 export default function CategoryPage() {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [name, setName] = useState("");
-  const [count, setCount] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [formData, setFormData] = useState<CategoryFormData>({
+    name: "",
+    status: true,
+  });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     loadCategories();
   }, []);
 
+  useEffect(() => {
+    filterAndSortCategories();
+  }, [categories, searchTerm, statusFilter, sortOrder]);
+
   const loadCategories = async () => {
     try {
       setIsLoading(true);
-      const data = await fetchCategories();
+      setError(null);
+      const data = await CategoryApiService.fetchCategories();
       setCategories(data);
     } catch (error) {
-      console.error('Error loading categories:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to load categories";
+      setError(errorMessage);
+      console.error("Error loading categories:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const filterAndSortCategories = () => {
+    const filtered = categories.filter((category) => {
+      const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" || (statusFilter === "active" && category.status) || (statusFilter === "inactive" && !category.status);
+
+      return matchesSearch && matchesStatus;
+    });
+
+    filtered.sort((a, b) => {
+      const comparison = a.name.localeCompare(b.name);
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+
+    setFilteredCategories(filtered);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      status: true,
+    });
+    setValidationErrors([]);
+    setSelectedCategory(null);
   };
 
   const handleSave = async () => {
-    if (!name.trim()) {
-      alert('Please enter a category name');
+    // Validate form
+    const errors = validateCategoryForm(formData);
+    if (errors.length > 0) {
+      setValidationErrors(errors);
       return;
     }
 
     try {
       setIsLoading(true);
-      const categoryData = { name: name.trim(), count };
+      setError(null);
+      setValidationErrors([]);
+
+      const categoryData = {
+        name: formData.name.trim(),
+        status: formData.status,
+      };
 
       if (selectedCategory?.id) {
         // Update existing category
-        const updatedCategory = await updateCategory(selectedCategory.id, categoryData);
-        setCategories(categories.map(cat => 
-          cat.id === selectedCategory.id ? updatedCategory : cat
-        ));
+        const updatedCategory = await CategoryApiService.updateCategory(selectedCategory.id, categoryData);
+        setCategories(categories.map((cat) => (cat.id === selectedCategory.id ? updatedCategory : cat)));
       } else {
         // Create new category
-        const newCategory = await createCategory(categoryData);
+        const newCategory = await CategoryApiService.createCategory(categoryData);
         setCategories([...categories, newCategory]);
       }
 
-      // Reset form and close modal
       setIsModalOpen(false);
-      setName("");
-      setCount(0);
-      setSelectedCategory(null);
+      resetForm();
     } catch (error) {
-      console.error('Error saving category:', error);
-      alert('Failed to save category. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : "Failed to save category";
+      setError(errorMessage);
+      console.error("Error saving category:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleEdit = (category) => {
+  const handleEdit = (category: Category) => {
     setSelectedCategory(category);
-    setName(category.name);
-    setCount(category.count);
+    setFormData({
+      name: category.name,
+      status: category.status ?? true,
+    });
+    setValidationErrors([]);
+    setError(null);
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this category?')) {
-      return;
-    }
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this category?")) return;
 
     try {
       setIsLoading(true);
-      await deleteCategory(id);
-      setCategories(categories.filter(cat => cat.id !== id));
+      setError(null);
+      await CategoryApiService.deleteCategory(id);
+      setCategories(categories.filter((cat) => cat.id !== id));
     } catch (error) {
-      console.error('Error deleting category:', error);
-      alert('Failed to delete category. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete category";
+      setError(errorMessage);
+      console.error("Error deleting category:", error);
     } finally {
       setIsLoading(false);
     }
@@ -178,111 +285,68 @@ export default function CategoryPage() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setName("");
-    setCount(0);
-    setSelectedCategory(null);
+    resetForm();
+    setError(null);
   };
 
+  const getStatistics = () => {
+    const total = categories.length;
+    const active = categories.filter((cat) => cat.status).length;
+    const inactive = total - active;
+
+    return { total, active, inactive };
+  };
+
+  const stats = getStatistics();
+
   return (
-    <div className="min-h-screen bg-[#1B1B1B] text-white p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Category Management</h1>
-        <Button 
-          variant="default" 
+    <div className="space-y-6">
+      {/* Header Section đã được chuyển sang layout.tsx */}
+      <div className="flex justify-end">
+        <Button
           onClick={() => setIsModalOpen(true)}
           disabled={isLoading}
+          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
         >
+          <Plus className="w-4 h-4 mr-2" />
           Add Category
         </Button>
       </div>
 
-      {/* Table */}
-      <div className="bg-[#2A2A2A] rounded-2xl border border-[#3A3A3A] p-4">
-        {isLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="text-gray-400">Loading...</div>
-          </div>
-        ) : (
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-[#3A3A3A]">
-                <th className="py-2 px-4">ID</th>
-                <th className="py-2 px-4">Name</th>
-                <th className="py-2 px-4">Count</th>
-                <th className="py-2 px-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((category) => (
-                <tr key={category.id} className="border-b border-[#3A3A3A]">
-                  <td className="py-2 px-4">{category.id}</td>
-                  <td className="py-2 px-4">{category.name}</td>
-                  <td className="py-2 px-4">{category.count}</td>
-                  <td className="py-2 px-4">
-                    <Button 
-                      variant="outline" 
-                      className="mr-2" 
-                      onClick={() => handleEdit(category)}
-                      disabled={isLoading}
-                    >
-                      Edit
-                    </Button>
-                    <Button 
-                      variant="destructive"
-                      onClick={() => handleDelete(category.id)}
-                      disabled={isLoading}
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {/* Error Display */}
+      {error && (
+        <Card className="bg-red-600/20 border-red-600">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <p className="text-red-400">{error}</p>
+              <Button variant="outline" size="sm" onClick={() => setError(null)}>
+                Dismiss
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Modal */}
-      <Modal
+      {/* Categories Table (tách ra component) */}
+      <CategoryTable
+        categories={filteredCategories}
+        isLoading={isLoading}
+        searchTerm={searchTerm}
+        handleEdit={handleEdit}
+        handleDelete={handleDelete}
+      />
+
+      {/* Modal (tách ra component) */}
+      <CategoryModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={selectedCategory?.id ? "Edit Category" : "Add Category"}
-      >
-        <div className="space-y-4">
-          <Input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Category name"
-            className="w-full"
-            disabled={isLoading}
-          />
-          <Input
-            type="number"
-            value={count}
-            onChange={(e) => setCount(Number(e.target.value))}
-            placeholder="Count"
-            className="w-full"
-            disabled={isLoading}
-          />
-          <div className="flex justify-end gap-2">
-            <Button 
-              variant="outline" 
-              onClick={handleCloseModal}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant="default" 
-              onClick={handleSave}
-              disabled={isLoading || !name.trim()}
-            >
-              {isLoading ? 'Saving...' : 'Save'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        onSave={handleSave}
+        formData={formData}
+        setFormData={setFormData}
+        validationErrors={validationErrors}
+        isLoading={isLoading}
+        selectedCategory={selectedCategory}
+      />
     </div>
   );
 }

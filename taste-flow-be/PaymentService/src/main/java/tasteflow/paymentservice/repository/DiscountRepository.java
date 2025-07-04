@@ -8,5 +8,5 @@ import tasteflow.paymentservice.model.Discount;
 public interface DiscountRepository extends JpaRepository<Discount, Integer> {
     public boolean existsByCoupon(String coupon);
 
-    Discount findById(int id);
+    Discount findBydiscountCode(String discountCode);
 }

@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        
+        {
+            "type": "chrome",
+            "name": "http://localhost:8084/api/order/sample",
+            "request": "launch",
+            "url": "http://localhost:8084/api/order/sample"
+        }
+    ]
+}
