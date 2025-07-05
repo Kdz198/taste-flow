@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 import tasteflow.paymentservice.model.Payment;
+import tasteflow.paymentservice.model.UrlPayment;
+import tasteflow.paymentservice.repository.UrlPaymentRepository;
 import tasteflow.paymentservice.service.PaymentService;
 import tasteflow.paymentservice.service.VNPAYService;
 
@@ -30,6 +32,9 @@ public class VNPAYController {
 
     @Autowired
     PaymentService paymentService;
+
+    @Autowired
+    UrlPaymentRepository urlPaymentRepository;
 
     @GetMapping()
     public String getVnpay(@RequestParam String id, @RequestParam int price, String bankCode) throws UnsupportedEncodingException {
@@ -75,13 +80,16 @@ public class VNPAYController {
 
         System.out.println("paymentId: " + paymentId);
 
-        // Cập nhật trạng thái thanh toán vào database + gửi hoóa đơn vào mail + tạo notification
+        // Cập nhật trạng thái thanh toán vào database + gửi hoóa đơn vào mail + tạo notification + dissable url
         if (isSuccess) {
             Payment payment = paymentService.getPaymentById(Integer.parseInt(paymentId));
             payment.setStatus(Payment.PaymentStatus.SUCCESS);
             payment.setTransactionId(vnp_TransactionNo);
             payment.setPaymentMethod(Payment.PaymentMethod.VNPAY);
             paymentService.updatePayment(payment);
+            UrlPayment urlPayment = urlPaymentRepository.findById(payment.getOrderId()).orElse(null);
+            urlPayment.setUsed(true);
+            urlPaymentRepository.save(urlPayment);
         } else {
             System.out.println("Thanh toan cancle");
         }

@@ -21,7 +21,7 @@ public class DiscountService {
         if(!discountRepository.existsById(id)) {
             throw new CustomException("Discount not found", HttpStatus.NOT_FOUND);
         }
-        return discountRepository.findById(id);
+        return discountRepository.findById(id).orElseThrow();
      }
 
      public Discount createDiscount(Discount discount) {
@@ -40,8 +40,12 @@ public class DiscountService {
         }
      }
 
+     public Discount findByDiscountCode (String discountCode) {
+        return discountRepository.findBydiscountCode(discountCode);
+     }
+
      public void setActive(int id){
-        Discount discount = discountRepository.findById(id);
+        Discount discount = discountRepository.findById(id).orElseThrow();
 
         if (discount != null) {
             if(discount.isActive()) {

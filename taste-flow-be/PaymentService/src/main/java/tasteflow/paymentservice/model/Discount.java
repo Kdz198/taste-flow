@@ -15,6 +15,7 @@ public class Discount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id ;
     private String name;
+    private String discountCode;
     private Date startTime;
     private Date endTime;
     @Column(unique = true)
