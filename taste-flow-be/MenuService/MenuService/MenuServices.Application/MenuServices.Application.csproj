@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Folder Include="FluentValidation\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

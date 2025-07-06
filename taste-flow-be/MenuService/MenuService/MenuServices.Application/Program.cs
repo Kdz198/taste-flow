@@ -4,7 +4,6 @@ using MenuServices.Application.Entities;
 using MenuServices.Application.Interfaces;
 using MenuServices.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace MenuServices.Application
 {
@@ -22,7 +21,7 @@ namespace MenuServices.Application
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<IRepositories<Menu>, MenuRepositories>();
             builder.Services.AddScoped<IRepositories<Category>, CategoryRepositories>();
-            builder.Services.AddMediatR( cfg => cfg.RegisterServicesFromAssembly( Assembly.GetExecutingAssembly() ) );
+            builder.Services.AddMediatR( cfg => cfg.RegisterServicesFromAssembly( typeof( Program ).Assembly ) );
             builder.Services.AddDbContext<AppDbContext>( options =>
                 options.UseSqlServer( builder.Configuration.GetConnectionString( "MenuDbConnection" ) ) );
             var app = builder.Build();

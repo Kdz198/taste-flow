@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using MenuServices.Application.MediatRs.Menu.MediatR.CreateMenu;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MenuServices.Application.Controllers
@@ -14,25 +15,11 @@ namespace MenuServices.Application.Controllers
             _mediator = mediator ?? throw new ArgumentNullException( nameof( mediator ) );
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetMenus()
+        [HttpPost]
+        public async Task<IActionResult> CreateMenu( [FromBody] CreateMenuCommand createMenuCommand )
         {
-            var menus = await _mediator.Send();
-            return Ok( menus );
-        }
-
-        [HttpGet( "{id}" )]
-        public async Task<IActionResult> GetMenuById( int id )
-        {
-            try
-            {
-                var menu = await _mediator.Send( id );
-                return Ok( menu );
-            }
-            catch( KeyNotFoundException ex )
-            {
-                return NotFound( ex.Message );
-            }
+            var response = await _mediator.Send( createMenuCommand );
+            return ( IActionResult ) response;
         }
 
     }

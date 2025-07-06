@@ -6,7 +6,7 @@ namespace MenuServices.Application.Interfaces
 {
     public abstract class AsbtractRepositories<T> : IRepositories<T> where T : class
     {
-        private readonly AppDbContext _context;
+        protected readonly AppDbContext _context;
 
         protected AsbtractRepositories( AppDbContext context )
         {

@@ -11,7 +11,7 @@
             get; set;
         }
 
-        public int MenuItemId
+        public int MenuId
         {
             get; set;
         }

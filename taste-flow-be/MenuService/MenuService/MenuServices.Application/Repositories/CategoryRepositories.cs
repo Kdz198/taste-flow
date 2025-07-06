@@ -9,5 +9,14 @@ namespace MenuServices.Application.Repositories
         public CategoryRepositories( AppDbContext context ) : base( context )
         {
         }
+
+        public async Task<IEnumerable<Category>> GetByNameAsync( string name )
+        {
+            return await Task.FromResult(
+                _context.Categories
+                .Where( c => c.Name.Contains( name, StringComparison.OrdinalIgnoreCase ) )
+                .AsEnumerable()
+            );
+        }
     }
 }

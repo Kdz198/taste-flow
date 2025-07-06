@@ -14,7 +14,7 @@ namespace MenuServices.Application.Entities
         public string Name { get; set; } = string.Empty;
 
         [Required]
-        public float Price
+        public decimal Price
         {
             get; set;
         }

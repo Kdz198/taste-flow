@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MenuServices.Application.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250706071324_Create_Menu_Category_Entities")]
-    partial class Create_Menu_Category_Entities
+    [Migration("20250706111403_Update_Ingredient_Column")]
+    partial class Update_Ingredient_Column
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,24 +61,16 @@ namespace MenuServices.Application.Migrations
 
             modelBuilder.Entity("MenuServices.Application.Entities.Ingredient", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("MenuId")
                         .HasColumnType("int");
 
-                    b.Property<int>("MenuItemId")
+                    b.Property<int>("Id")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("MenuId");
+                    b.HasKey("MenuId", "Id");
 
                     b.ToTable("Ingredients", (string)null);
                 });
@@ -99,8 +91,9 @@ namespace MenuServices.Application.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<float>("Price")
-                        .HasColumnType("real");
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");

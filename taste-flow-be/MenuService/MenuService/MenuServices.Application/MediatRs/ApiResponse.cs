@@ -12,11 +12,17 @@
             get; set;
         }
 
-        public ApiResponse( string message, T data, bool success = true )
+        public ApiResponse( string message, T data )
         {
-            Message = message;
+            Message = message ?? string.Empty;
             Data = data;
+        }
+
+        public ApiResponse( bool success, string message, T data )
+        {
             Success = success;
+            Message = message ?? string.Empty;
+            Data = data;
         }
     }
 }

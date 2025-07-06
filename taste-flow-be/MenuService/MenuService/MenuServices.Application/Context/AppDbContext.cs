@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MenuServices.Application.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace MenuServices.Application.Context
 {
@@ -13,6 +14,11 @@ namespace MenuServices.Application.Context
             modelBuilder.Entity<Entities.Menu>().ToTable( "Menus" );
             modelBuilder.Entity<Entities.Category>().ToTable( "Categories" );
             modelBuilder.Entity<Entities.Ingredient>().ToTable( "Ingredients" );
+            modelBuilder.Entity<Entities.Ingredient>()
+                .HasKey( i => new { i.MenuId, i.Id } );
+            modelBuilder.Entity<Menu>()
+                .Property( m => m.Price )
+                .HasPrecision( 18, 4 );
         }
         public DbSet<Entities.Menu> Menus
         {
