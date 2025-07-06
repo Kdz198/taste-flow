@@ -3,8 +3,10 @@ package tasteflow.InventoryService.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import tasteflow.InventoryService.dto.MenuDTO;
 import tasteflow.InventoryService.model.Ingredient;
 import tasteflow.InventoryService.service.IngredientService;
+import tasteflow.InventoryService.service.MenuService;
 
 import java.util.List;
 
@@ -14,6 +16,7 @@ import java.util.List;
 public class IngredientController {
     @Autowired
     private IngredientService service;
+
 
     @GetMapping
     public List<Ingredient> getAllIngredients() {
@@ -43,5 +46,11 @@ public class IngredientController {
     @GetMapping("/set-active/{id}")
     public void setActiveIngredient(@PathVariable int id) {
         service.setActive(id);
+    }
+
+
+    @GetMapping("/get-by-list-id")
+    public List<Ingredient> getIngredientsByListId(@RequestBody List<Integer> listId) {
+        return service.getIngredientsByID(listId);
     }
 }
