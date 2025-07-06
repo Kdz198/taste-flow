@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name="IngredientDetails")
@@ -32,4 +33,17 @@ public class IngredientDetail {
 
     @Column(name="active")
     private boolean active;
+
+    @Column(name = "reserved")
+    @Min(value = 0, message = "Reserved must be >= 0")
+    private int reserved;
+
+    @Column(name = "LastReservedAt")
+    private Timestamp lastReservedAt;
+
+    @Transient
+    public int getAvailableQuantity() {
+        return quantity - reserved;
+    }
+
 }

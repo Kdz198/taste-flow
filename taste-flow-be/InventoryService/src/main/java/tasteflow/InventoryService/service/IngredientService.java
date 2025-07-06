@@ -7,6 +7,7 @@ import tasteflow.InventoryService.exception.CustomException;
 import tasteflow.InventoryService.model.Ingredient;
 import tasteflow.InventoryService.repository.IngredientRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,7 +24,7 @@ public class IngredientService {
             return repo.findById(id).get();
         }
         else{
-            throw new CustomException("Ingredient does not exist !", HttpStatus.NOT_FOUND);
+            throw new CustomException("Ingredient does with id: "+id+ " does not exist !", HttpStatus.NOT_FOUND);
         }
     }
 
@@ -52,7 +53,7 @@ public class IngredientService {
             repo.deleteById(id);
         }
         else{
-            throw new CustomException("Ingredient does not exist !", HttpStatus.NOT_FOUND);
+            throw new CustomException("Ingredient does with id: "+id+ " does not exist !", HttpStatus.NOT_FOUND);
         }
     }
 
@@ -68,4 +69,13 @@ public class IngredientService {
             repo.save(ingredient);
         }
     }
+
+    public List<Ingredient> getIngredientsByID(List<Integer> id){
+        List<Ingredient> list = new ArrayList<>();
+        for(Integer i : id){
+            list.add(getIngredientById(i));
+        }
+        return list;
+    }
+
 }
