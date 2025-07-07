@@ -30,12 +30,19 @@ namespace MenuServices.Application
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if( app.Environment.IsDevelopment() )
+           
+            // Swagger Middleware
+            app.UseSwagger(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+                c.RouteTemplate = "api/menus/swagger/{documentName}/swagger.json";
+            });
 
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/api/menus/swagger/v1/swagger.json", "Menu Service V1");
+                c.RoutePrefix = "swagger-ui"; // UI will be at /swagger-ui
+            });
+            
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
