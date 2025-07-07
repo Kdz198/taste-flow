@@ -31,13 +31,13 @@ namespace MenuServices.Application.Interfaces
             return _context.SaveChangesAsync().ContinueWith( t => t.Result > 0 );
         }
 
-        public Task<IEnumerable<T>> GetAllAsync()
+        public virtual Task<IEnumerable<T>> GetAllAsync()
         {
             var entries = _context.Set<T>().ToListAsync();
             return entries.ContinueWith( t => ( IEnumerable<T> ) t.Result );
         }
 
-        public async Task<T> GetByIdAsync( int id )
+        public virtual async Task<T> GetByIdAsync( int id )
         {
             var entry = await _context.Set<T>().FindAsync( id );
             if( entry == null )

@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using MenuServices.Application.Entities;
+using MenuServices.Application.DTOs;
 
 namespace MenuServices.Application.MediatRs.Menu.MediatR.CreateMenu
 {
@@ -7,6 +7,6 @@ namespace MenuServices.Application.MediatRs.Menu.MediatR.CreateMenu
         string Name,
         decimal Price,
         string ImgUrl,
-        List<Ingredient> Ingredients,
+        List<IngredientDTO> Ingredients,
         List<int> Categories ) : IRequest<ApiResponse<MenuServices.Application.Entities.Menu>>;
 }

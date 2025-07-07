@@ -18,5 +18,14 @@ namespace MenuServices.Application.Repositories
                 .AsEnumerable()
             );
         }
+
+        public async Task<IEnumerable<Category>> GetByIdsAsync( List<int> ids )
+        {
+            return await Task.FromResult(
+                _context.Categories
+                .Where( c => ids.Contains( c.Id ) )
+                .AsEnumerable()
+            );
+        }
     }
 }

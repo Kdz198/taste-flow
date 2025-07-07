@@ -1,4 +1,6 @@
-﻿namespace MenuServices.Application.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace MenuServices.Application.Entities
 {
     public class Ingredient
     {
@@ -11,6 +13,8 @@
             get; set;
         }
 
+
+        [JsonIgnore]
         public int MenuId
         {
             get; set;
