@@ -35,4 +35,9 @@ public class CartController {
         Cart updatedCart = cartService.removeFromCart(request.userId(), request.itemsToRemove());
         return updatedCart;
     }
+
+    @GetMapping("{userId}")
+    public Cart getCart(@PathVariable int userId) {
+        return cartService.getCartByUserId(userId);
+    }
 }

@@ -1,13 +1,12 @@
 package tasteflow.paymentservice.controller;
 
 
-import com.netflix.discovery.converters.Auto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import tasteflow.paymentservice.model.Payment;
-import tasteflow.paymentservice.model.UrlPayment;
 import tasteflow.paymentservice.service.*;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/payment")
@@ -15,9 +14,6 @@ public class PaymentController {
 
     @Autowired
     PaymentService paymentService;
-    @Autowired
-    UrlPaymentService urlPaymentService;
-
     @GetMapping
     public List<Payment> getAllPayments() {
         return paymentService.getAllPayments();
@@ -34,9 +30,15 @@ public class PaymentController {
         return paymentService.getPaymentHistoryByUser(userId);
     }
 
-    @GetMapping("/url")
-    public UrlPayment getUrlPaymentByOrderId(@RequestParam int orderId) {
-        return urlPaymentService.getUrlPayment(orderId);
+    @GetMapping("/{orderId}/status")
+    public String getPaymentByOrderId(@PathVariable int orderId) {
+        Optional<Payment> payment = paymentService.getPaymentByOrderId(orderId);
+        if (payment.isPresent()) {
+            return "READY";
+        }
+
+
+         return "NOT FOUND";
     }
 
 
@@ -47,13 +49,6 @@ public class PaymentController {
 
 
 
-//    @PostMapping()
-//    public String createPayment(@RequestBody Payment payment) throws Exception {
-//        String url ="";
-//        int total = payment.getAmount();
-//
-//        paymentService.processPayment(payment);
-//        return url;
-//    }
+
 
 }

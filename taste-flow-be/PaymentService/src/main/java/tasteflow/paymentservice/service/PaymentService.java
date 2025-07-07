@@ -6,12 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tasteflow.paymentservice.exception.CustomException;
 import tasteflow.paymentservice.model.Payment;
-import tasteflow.paymentservice.model.UrlPayment;
 import tasteflow.paymentservice.repository.PaymentRepository;
-import tasteflow.paymentservice.repository.UrlPaymentRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PaymentService {
@@ -24,8 +22,6 @@ public class PaymentService {
     MomoService momoService;
     @Autowired
     DiscountService discountService;
-    @Autowired
-    private UrlPaymentRepository urlPaymentRepository;
 
     public Payment processPayment(Payment payment) throws Exception {
 
@@ -82,6 +78,10 @@ public class PaymentService {
 
     public Payment getPaymentById(int id) {
         return paymentRepository.findById(id).orElseThrow();
+    }
+
+    public Optional<Payment> getPaymentByOrderId(int orderId) {
+        return Optional.ofNullable(paymentRepository.findByorderId(orderId));
     }
 
     public List<Payment> getAllPayments() {

@@ -17,6 +17,11 @@ public class CartService {
     @Autowired
     CartRepository cartRepository;
 
+    public Cart getCartByUserId ( int userId)
+    {
+        return cartRepository.findByUserId(userId);
+    }
+
 
     @Transactional
     public Cart addToCart(int userId, Map<Integer, Integer> itemsToAdd) {
@@ -26,7 +31,6 @@ public class CartService {
             cart = cartRepository.findById(userId).orElseThrow(() -> new RuntimeException("Cart not found"));
             Map<Integer, Integer> existingItems = cart.getItems();
 
-            // Merge new items into existing cart
             for (Map.Entry<Integer, Integer> entry : itemsToAdd.entrySet()) {
                 int dishId = entry.getKey();
                 int quantity = entry.getValue();
@@ -37,6 +41,13 @@ public class CartService {
             cart.setUserId(userId);
             cart.setItems(new HashMap<>(itemsToAdd));
         }
+
+        //calculator quantity in cart
+        int totalQuantity = 0;
+        for (Integer quantity : cart.getItems().values()) {
+            totalQuantity += quantity;
+        }
+        cart.setQuantity(totalQuantity);
 
         return cartRepository.save(cart);
     }
@@ -55,6 +66,13 @@ public class CartService {
             }
         }
         cart.setItems( map );
+
+        int totalQuantity = 0;
+        for (Integer quantity : cart.getItems().values()) {
+            totalQuantity += quantity;
+        }
+        cart.setQuantity(totalQuantity);
+
         return cartRepository.save( cart );
 
     }
