@@ -12,6 +12,7 @@ namespace MenuServices.Application.MediatRs.DumpData.MediatR
         private List<Entities.Category> _categories = new()
             {
                 new Entities.Category { Name = "Beverages" },
+                new Entities.Category { Name = "Beverages" },
                 new Entities.Category { Name = "Appetizers" },
                 new Entities.Category { Name = "Main Course" },
                 new Entities.Category { Name = "Desserts" }
