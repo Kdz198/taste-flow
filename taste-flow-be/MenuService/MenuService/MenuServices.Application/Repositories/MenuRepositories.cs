@@ -27,5 +27,17 @@ namespace MenuServices.Application.Repositories
                 .FirstOrDefaultAsync( m => m.Id == id );
             return menu!;
         }
+
+        public override async Task<bool> DeleteAsync( int id )
+        {
+            var menu = await _context.Menus.FindAsync( id );
+            if( menu == null )
+            {
+                return false;
+            }
+            menu.Status = false;
+            await base.UpdateAsync( menu );
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }
