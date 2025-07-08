@@ -27,7 +27,7 @@ public class RabbitMQConfig {
 
 
     @Bean
-    public Queue orderQueue() {
+    public Queue paymentQueue() {
         return new Queue("payment.queue");
     }
 
@@ -37,9 +37,14 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public TopicExchange paymentExchange() {
+        return new TopicExchange("payment.exchange");
+    }
+
+    @Bean
     public Binding bindingOrder() {
         return BindingBuilder
-                .bind(orderQueue())
+                .bind(paymentQueue())
                 .to(orderExchange())
                 .with("order.confirmed");
     }

@@ -33,7 +33,7 @@ public class OrderController {
     public void test()
     {
         Order order = new Order();
-        order.setOrderId(19);
+        order.setOrderId(13);
         order.setUserId(19);
         order.setTotalAmount(200000);
         producer.confirmOrder(order);

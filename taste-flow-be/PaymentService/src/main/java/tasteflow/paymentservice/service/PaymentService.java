@@ -24,6 +24,10 @@ public class PaymentService {
     DiscountService discountService;
 
     public Payment processPayment(Payment payment) throws Exception {
+        Payment p = paymentRepository.findByorderId(payment.getOrderId());
+        if (p != null) {
+            payment.setId(p.getId());
+        }
 
         payment.setStatus(Payment.PaymentStatus.PENDING);
         return paymentRepository.save(payment);
@@ -59,7 +63,7 @@ public class PaymentService {
         }
         else if (paymentMethod.equals("MOMO"))
         {
-            url = momoService.createPaymentRequest(total, String.valueOf(payment.getId()));
+            url = momoService.createPaymentRequest(total, String.valueOf(payment.getId()),orderId);
             payment.setPaymentMethod(Payment.PaymentMethod.MOMO);
         }
 

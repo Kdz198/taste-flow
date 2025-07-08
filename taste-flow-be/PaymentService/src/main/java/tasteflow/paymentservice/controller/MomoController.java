@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tasteflow.paymentservice.RabbitMQ.Producer;
 import tasteflow.paymentservice.model.Payment;
 import tasteflow.paymentservice.service.PaymentService;
 
@@ -20,9 +21,12 @@ public class MomoController {
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private Producer producer;
+
 
     @GetMapping("/momo-return")
-    public ResponseEntity<Map<String, Object>> handleMomoReturn(@RequestParam Map<String, String> params) {
+    public ResponseEntity<Map<String, Object>> handleMomoReturn(@RequestParam Map<String, String> params) throws Exception {
         Map<String, Object> response = new HashMap<>(params);
 
         // Trích xuất các thuộc tính từ params
@@ -52,7 +56,7 @@ public class MomoController {
             payment.setTransactionId(transId);
             payment.setPaymentMethod(Payment.PaymentMethod.MOMO);
             paymentService.updatePayment(payment);
-
+            producer.confirmPayment(payment.getOrderId(), payment.getId());
         }
         else
         {

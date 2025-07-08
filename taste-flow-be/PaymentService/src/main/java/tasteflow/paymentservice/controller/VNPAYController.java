@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tasteflow.paymentservice.RabbitMQ.Producer;
 import tasteflow.paymentservice.model.Payment;
 import tasteflow.paymentservice.service.PaymentService;
 import tasteflow.paymentservice.service.VNPAYService;
@@ -28,6 +29,8 @@ public class VNPAYController {
     @Autowired
     PaymentService paymentService;
 
+    @Autowired
+    private Producer producer;
 
 
     @GetMapping()
@@ -38,7 +41,7 @@ public class VNPAYController {
 
 
     @GetMapping("/vnpay-return")
-    public String handleVnPayReturn(@RequestParam Map<String, String> params, HttpServletResponse httpResponse) throws IOException, UnsupportedEncodingException {
+    public String handleVnPayReturn(@RequestParam Map<String, String> params, HttpServletResponse httpResponse) throws Exception {
         Map<String, Object> response = new HashMap<>();
 
         // Lấy các thông tin quan trọng từ VNPay
@@ -81,6 +84,7 @@ public class VNPAYController {
             payment.setTransactionId(vnp_TransactionNo);
             payment.setPaymentMethod(Payment.PaymentMethod.VNPAY);
             paymentService.updatePayment(payment);
+            producer.confirmPayment(payment.getOrderId(), payment.getId());
 
         } else {
             System.out.println("Thanh toan cancle");

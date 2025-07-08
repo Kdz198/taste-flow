@@ -45,6 +45,14 @@ public class OrderService {
         producer.confirmOrder(order);
     }
 
+    public void completedOrder (int orderId, int paymentId) {
+        Order order  = orderRepository.findById(orderId).orElse(null);
+        System.out.println(order);
+        order.setStatus(Order.OrderStatus.COMPLETED);
+        order.setPaymentId(paymentId);
+        orderRepository.save(order);
+    }
+
     public Order cancleOrder(int orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();
         order.setStatus(Order.OrderStatus.CANCELLED);
