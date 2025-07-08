@@ -50,6 +50,11 @@ namespace MenuServices.Application.MediatRs.DumpData.MediatR
 
         public Task<ApiResponse<object>> Handle( DumpCommand request, CancellationToken cancellationToken )
         {
+            if( request == null )
+            {
+                throw new ArgumentNullException( nameof( request ) );
+            }
+
             var resultMenu = _menuRepositories.LoadDumpData( _menus );
             if( resultMenu.Result )
             {

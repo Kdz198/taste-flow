@@ -1,6 +1,7 @@
 ﻿using MenuServices.Application.DTOs;
 using MenuServices.Application.Entities;
 using MenuServices.Application.MediatRs.Menu.MediatR.CreateMenu;
+using MenuServices.Application.MediatRs.Menu.MediatR.UpdateMenu;
 
 namespace MenuServices.Application.Helpers
 {
@@ -43,6 +44,17 @@ namespace MenuServices.Application.Helpers
             }
 
             return ingredients;
+        }
+
+        public static Menu ConvertUpdateCommandToMenu( this UpdateMenuCommand updateMenuCommand, Menu menuToUpdate, List<Category> allCategories )
+        {
+            menuToUpdate.Id = updateMenuCommand.id;
+            menuToUpdate.Name = updateMenuCommand.Name!;
+            menuToUpdate.Price = ( decimal ) updateMenuCommand.Price!;
+            menuToUpdate.ImgUrl = updateMenuCommand.ImageUrl!;
+            menuToUpdate.Ingredients = updateMenuCommand.IngredientsId.MapIngredients();
+            menuToUpdate.Categories = updateMenuCommand.CategoriesId.Map( allCategories );
+            return menuToUpdate;
         }
     }
 }
