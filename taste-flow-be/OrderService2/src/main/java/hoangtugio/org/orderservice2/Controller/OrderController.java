@@ -30,10 +30,10 @@ public class OrderController {
     }
 
     @GetMapping("test")
-    public void test()
+    public void test(int orderid)
     {
         Order order = new Order();
-        order.setOrderId(13);
+        order.setOrderId(orderid);
         order.setUserId(19);
         order.setTotalAmount(200000);
         producer.confirmOrder(order);
