@@ -41,7 +41,7 @@ public class Payment {
 
     private int discountValue;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+//    @Column(columnDefinition = "NVARCHAR(MAX)")
     String url;
 
     @NotNull(message = "Status is mandatory")

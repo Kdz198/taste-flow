@@ -7,9 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import tasteflow.InventoryService.dto.MenuDTO;
-import tasteflow.InventoryService.dto.OrderItemDTO;
-import tasteflow.InventoryService.dto.ReceiptItem;
+import tasteflow.InventoryService.dto.*;
 import tasteflow.InventoryService.exception.CustomException;
 import tasteflow.InventoryService.model.Ingredient;
 import tasteflow.InventoryService.model.IngredientDetail;
@@ -140,30 +138,49 @@ public class IngredientDetailService {
     }
 
     public Map<Integer,Integer> getIngredientFromDish(List<OrderItemDTO> orderItems){
-        System.out.println("getIngredientFromDish");
-        //map này chứa ingredient id và quanity
         Map<Integer,Integer> ingredient = new HashMap<>();
-        for (OrderItemDTO item : orderItems) {
-            String dishId = item.getDishId();
-            int quantity = item.getQuantity();
-            // Tìm món ăn theo dishId
-            MenuDTO menu = menuService.getMenuById(dishId);
-        //lấy công thức từ menu ra và nhân lại để tính ra số lượng ngueyen liệu cần
-        for(ReceiptItem r : menu.getReceipt()) {
-            int ingredientId = r.getIdIngredient();
-            int totalQuantity = r.getQuantity() * quantity;
+        Menus menus = new Menus();
+        List<Integer> dishes = new ArrayList<>();
+        for (OrderItemDTO orderItem : orderItems) {
+            dishes.add(orderItem.getDishId());
+        }
+        menus.setMenus(dishes);
+        Menu menu = menuService.getMenu(menus);
+        for(IngredientDTO i : menu.getData()){
+            ingredient.put(i.getId(), i.getQuantity());
+        }
+        ingredient.forEach((id, quantity) ->
+                System.out.println("Ingredient ID: " + id + ", Quantity: " + quantity)
+        );
 
-            //nếu có nguyên liệu trùng trong món thì cộng dồn cho nguyên liệu đó
-            if (!ingredient.containsKey(ingredientId)) {
-                ingredient.put(ingredientId, totalQuantity);
-            } else {
-                int old = ingredient.get(ingredientId);
-                ingredient.put(ingredientId, old + totalQuantity);
-            }
-        }
-        }
         return ingredient;
     }
+
+//    public Map<Integer,Integer> getIngredientFromDish1(List<OrderItemDTO> orderItems){
+//        System.out.println("getIngredientFromDish");
+//        //map này chứa ingredient id và quanity
+//        Map<Integer,Integer> ingredient = new HashMap<>();
+//        for (OrderItemDTO item : orderItems) {
+//            String dishId = item.getDishId();
+//            int quantity = item.getQuantity();
+//            // Tìm món ăn theo dishId
+//            MenuDTO menu = menuService.getMenuById(dishId);
+//        //lấy công thức từ menu ra và nhân lại để tính ra số lượng ngueyen liệu cần
+//        for(ReceiptItem r : menu.getReceipt()) {
+//            int ingredientId = r.getIdIngredient();
+//            int totalQuantity = r.getQuantity() * quantity;
+//
+//            //nếu có nguyên liệu trùng trong món thì cộng dồn cho nguyên liệu đó
+//            if (!ingredient.containsKey(ingredientId)) {
+//                ingredient.put(ingredientId, totalQuantity);
+//            } else {
+//                int old = ingredient.get(ingredientId);
+//                ingredient.put(ingredientId, old + totalQuantity);
+//            }
+//        }
+//        }
+//        return ingredient;
+//    }
 
     @Transactional
     public void reserveIngredients(Map<Integer, Integer> ingredientMap,InventoryOrder order) {

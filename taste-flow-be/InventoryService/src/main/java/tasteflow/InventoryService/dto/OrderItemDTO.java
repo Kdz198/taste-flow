@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class OrderItemDTO {
     private int orderItemId;
     private OrderDTO order;
-    private String dishId;
+    private int dishId;
     private int quantity;
     private double unitPrice;
     private double subtotal;

@@ -20,7 +20,7 @@ namespace MenuServices.Application.Interfaces
             return entry.Entity;
         }
 
-        public Task<bool> DeleteAsync( int id )
+        public virtual Task<bool> DeleteAsync( int id )
         {
             var entry = _context.Set<T>().Find( id );
             if( entry == null )
