@@ -3,7 +3,9 @@ package tasteflow.InventoryService.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tasteflow.InventoryService.dto.Menu;
 import tasteflow.InventoryService.dto.MenuDTO;
+import tasteflow.InventoryService.dto.Menus;
 import tasteflow.InventoryService.service.MenuService;
 import tasteflow.InventoryService.service.OrderItemService;
 
@@ -29,8 +31,9 @@ public class TestController {
         return menuService.getMenuById(id);
     }
 
-    @DeleteMapping("/delete-item/{id}")
-    public void deleteItem(@PathVariable("id") String id) {
 
+    @PostMapping("/ingredient")
+    public Menu get(@RequestBody Menus menus) {
+        return menuService.getMenu(menus);
     }
 }

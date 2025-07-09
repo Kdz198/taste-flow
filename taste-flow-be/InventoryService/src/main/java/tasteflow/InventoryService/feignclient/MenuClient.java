@@ -5,7 +5,11 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import tasteflow.InventoryService.dto.Menu;
 import tasteflow.InventoryService.dto.MenuDTO;
+import tasteflow.InventoryService.dto.Menus;
 
 import java.util.List;
 
@@ -18,4 +22,6 @@ public interface MenuClient {
     @GetMapping("api/menu/{id}")
     MenuDTO getMenuById(@PathVariable("id") String id);
 
+    @PostMapping("api/Menus/ingredients")
+    Menu getIngredient(@RequestBody Menus menus);
 }
