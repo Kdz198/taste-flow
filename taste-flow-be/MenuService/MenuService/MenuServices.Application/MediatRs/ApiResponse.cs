@@ -12,6 +12,12 @@
             get; set;
         }
 
+        public ApiResponse()
+        {
+            Message = string.Empty;
+            Data = null!;
+        }
+
         public ApiResponse( string message, T data )
         {
             Message = message ?? string.Empty;
