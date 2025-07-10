@@ -4,10 +4,7 @@ import com.netflix.discovery.converters.Auto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import tasteflow.InventoryService.dto.Menu;
-import tasteflow.InventoryService.dto.MenuDTO;
-import tasteflow.InventoryService.dto.MenuResponse;
-import tasteflow.InventoryService.dto.Menus;
+import tasteflow.InventoryService.dto.*;
 import tasteflow.InventoryService.feignclient.MenuClient;
 
 import java.util.List;
@@ -28,6 +25,12 @@ public class MenuService {
     }
 
     public Menu getMenu(Menus menus){
+        Menu menu = client.getIngredient(menus);
+        for (IngredientDTO i : menu.getData()){
+            System.out.println("Get from Client:");
+            System.out.println(i.getId());
+            System.out.println(i.getQuantity());
+        }
         return client.getIngredient(menus);
     }
 }
