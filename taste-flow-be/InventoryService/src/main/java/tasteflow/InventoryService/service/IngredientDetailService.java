@@ -142,10 +142,20 @@ public class IngredientDetailService {
         Menus menus = new Menus();
         List<Integer> dishes = new ArrayList<>();
         for (OrderItemDTO orderItem : orderItems) {
+            if(orderItem.getQuantity()>=2){
+                System.out.println(orderItem.getQuantity());
+                for(int i = 1;i<orderItem.getQuantity();i++){
+                    dishes.add(orderItem.getDishId());
+                }
+            }
             dishes.add(orderItem.getDishId());
         }
         menus.setMenus(dishes);
+        System.out.println("Menus"+menus.getMenus().toString());
         Menu menu = menuService.getMenu(menus);
+        for(IngredientDTO i : menu.getData()){
+            System.out.println("Ingredient Check From MEnu: "+i.getId()+"Quantity"+i.getQuantity());
+        }
         for(IngredientDTO i : menu.getData()){
             ingredient.put(i.getId(), i.getQuantity());
         }

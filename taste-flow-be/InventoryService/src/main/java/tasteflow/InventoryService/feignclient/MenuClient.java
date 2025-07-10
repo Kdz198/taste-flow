@@ -22,6 +22,6 @@ public interface MenuClient {
     @GetMapping("api/menu/{id}")
     MenuDTO getMenuById(@PathVariable("id") String id);
 
-    @PostMapping("api/Menus/ingredients")
+    @PostMapping("api/menus/ingredients")
     Menu getIngredient(@RequestBody Menus menus);
 }
