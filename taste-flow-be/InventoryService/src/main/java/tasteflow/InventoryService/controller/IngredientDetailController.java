@@ -60,9 +60,8 @@ public class IngredientDetailController {
     }
 
     @GetMapping("/check-inventory")
-    public ResponseEntity<?> checkInventory(@RequestBody List<OrderItemDTO> orderItem) {
-        service.checkAvaiable(orderItem);
-        return ResponseEntity.ok("AVAILABLE");
+    public boolean checkInventory(@RequestBody List<OrderItemDTO> orderItem) {
+        return service.checkAvaiable(orderItem);
     }
 
     @GetMapping("/confirm-order/{id}")

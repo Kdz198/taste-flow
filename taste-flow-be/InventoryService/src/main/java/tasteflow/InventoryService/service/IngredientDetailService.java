@@ -231,14 +231,15 @@ public class IngredientDetailService {
     }
 
     @Transactional
-    public void checkAvaiable(List<OrderItemDTO> orderItems) {
+    public boolean checkAvaiable(List<OrderItemDTO> orderItems) {
         Map<Integer,Integer> ingredients = getIngredientFromDish(orderItems);
         if(!isEnoughIngredient(ingredients)){
-            throw new CustomException("OUT_OF_STOCK",HttpStatus.BAD_REQUEST);
+            return false;
         }
         else{
             InventoryOrder order = saveOrder(orderItems);
             reserveIngredients(ingredients,order);
+            return true;
         }
     }
 
