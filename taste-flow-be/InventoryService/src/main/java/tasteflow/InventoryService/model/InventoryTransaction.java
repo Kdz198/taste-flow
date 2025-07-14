@@ -34,4 +34,13 @@ public class InventoryTransaction {
     private boolean transactionType;
     //true: nhap
     //false :xuat
+
+
+    public InventoryTransaction(Ingredient ingredient, int dishId, Date date, int quantity, boolean transactionType) {
+        this.ingredient = ingredient;
+        this.dishId = dishId;
+        this.date = date;
+        this.quantity = quantity;
+        this.transactionType = transactionType;
+    }
 }

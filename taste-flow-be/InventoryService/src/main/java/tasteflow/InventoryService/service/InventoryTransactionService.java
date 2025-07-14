@@ -7,6 +7,8 @@ import tasteflow.InventoryService.exception.CustomException;
 import tasteflow.InventoryService.model.InventoryTransaction;
 import tasteflow.InventoryService.repository.InventoryTransactionRepository;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -28,6 +30,7 @@ public class InventoryTransactionService {
     }
 
     public InventoryTransaction save(InventoryTransaction inventoryTransaction) {
+        inventoryTransaction.setDate(Date.valueOf(LocalDate.now()));
         return repo.save(inventoryTransaction);
     }
 

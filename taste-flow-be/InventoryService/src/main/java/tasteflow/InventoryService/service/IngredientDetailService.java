@@ -9,12 +9,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tasteflow.InventoryService.dto.*;
 import tasteflow.InventoryService.exception.CustomException;
-import tasteflow.InventoryService.model.Ingredient;
-import tasteflow.InventoryService.model.IngredientDetail;
-import tasteflow.InventoryService.model.InventoryOrder;
-import tasteflow.InventoryService.model.OrderItem;
+import tasteflow.InventoryService.model.*;
 import tasteflow.InventoryService.repository.IngredientDetailRepository;
 import tasteflow.InventoryService.repository.InventoryOrderRepository;
+import tasteflow.InventoryService.repository.InventoryTransactionRepository;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -41,6 +39,8 @@ public class IngredientDetailService {
     @Autowired
     private InventoryOrderRepository inventoryOrderRepository;
 
+    @Autowired
+    private InventoryTransactionRepository inventoryTransactionRepository;
 
     public List<IngredientDetail> findAll() {
         return repo.findAll();
@@ -57,6 +57,7 @@ public class IngredientDetailService {
 
     public IngredientDetail save(IngredientDetail ingredientDetail) {
         eventPublisher.publishEvent(ingredientDetail);
+        ingredientDetail.setEntryDate(Date.valueOf(LocalDate.now()));
         return repo.save(ingredientDetail);
     }
 
@@ -291,10 +292,24 @@ public class IngredientDetailService {
             int newQuantity = detail.getQuantity() - i.getQuantity();
             detail.setQuantity(newQuantity);
             save(detail);
+            //Tạo transaction theo dõi xuất kho
+            Ingredient ingredient = detail.getIngredient();
+            createOutTransaction(ingredient,i.getQuantity());
         }
         InventoryOrder order = inventoryOrderService.findByOrderId(orderId);
         deleteAllOrderItems(order.getId());
         inventoryOrderService.delete(order.getId());
         inventoryOrderRepository.flush();
     }
+
+    public void createOutTransaction(Ingredient ingredient,int quantity){
+        InventoryTransaction transaction = new InventoryTransaction();
+        transaction.setIngredient(ingredient);
+        transaction.setDishId(0);
+        transaction.setQuantity(quantity);
+        transaction.setDate(Date.valueOf(LocalDate.now()));
+        transaction.setTransactionType(false);
+        inventoryTransactionRepository.save(transaction);
+    }
+
 }
