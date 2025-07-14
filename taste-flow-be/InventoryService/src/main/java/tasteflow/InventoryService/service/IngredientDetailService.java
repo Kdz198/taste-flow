@@ -286,7 +286,7 @@ public class IngredientDetailService {
         List<InventoryOrder> orders = inventoryOrderService.findAll();
         for(InventoryOrder order : orders){
             System.out.println("reserve 123");
-            if (order.getReceivedAt().before(Timestamp.valueOf(LocalDateTime.now().minusMinutes(5)))) {
+            if (order.getReceivedAt().before(Timestamp.valueOf(LocalDateTime.now().minusMinutes(10)))) {
                 System.out.println("reserve 456");
                 resetReserve(order.getId());
                 InventoryOrder inventoryOrder = inventoryOrderService.findByOrderId(order.getOrderId());

@@ -12,9 +12,11 @@ public class Listener {
     @Autowired
     private OrderService orderService;
 
-  //  @RabbitListener(queues = "ExchangecuaInventory")
-    public void confirmOrder(int orderId) {
-        orderService.confirmOrder(orderId);
+    public record InventoryStatus(int orderId, String status) {}
+
+      @RabbitListener(queues = "inventory.queue")
+    public void confirmOrder(InventoryStatus inventoryStatus) {
+        orderService.confirmOrder(inventoryStatus.orderId, inventoryStatus.status);
     }
 
     public record PaymentConfirmedEvent(int orderId, int paymentId) {}

@@ -38,12 +38,30 @@ public class OrderService {
     }
 
     // sau khi nhận event lock kho thì đổi state & bắn sự kiện cho payment tạo url
-    public void confirmOrder (int orderId) {
+    public void confirmOrder (int orderId, String status) {
         Order order  = orderRepository.findById(orderId).orElseThrow();
-        order.setStatus(Order.OrderStatus.CONFIRMED);
+        if (status.equals("Out_Of_Stock")) {
+            order.setStatus(Order.OrderStatus.CANCELLED);
+        }
+        else if (status.equals("Available")) {
+            order.setStatus(Order.OrderStatus.CONFIRMED);
+            producer.confirmOrder(order);
+        }
+
         orderRepository.save(order);
-        producer.confirmOrder(order);
+
     }
+
+    public String checkStatus (int orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        if (order != null )
+            return order.getStatus().toString();
+
+        else
+            return "NOT FOUND";
+    }
+
+
 
     public void completedOrder (int orderId, int paymentId) {
         Order order  = orderRepository.findById(orderId).orElse(null);

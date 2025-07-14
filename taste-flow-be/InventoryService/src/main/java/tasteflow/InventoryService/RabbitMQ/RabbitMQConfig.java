@@ -1,5 +1,4 @@
-package hoangtugio.org.orderservice2.RabbitMQ.Config;
-
+package tasteflow.InventoryService.RabbitMQ;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -12,17 +11,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String ORDER_EXCHANGE = "order.exchange";
-
-    public static final String PAYMENT_EXCHANGE = "payment.exchange";
-
-    public static final String INVENTORY_EXCHANGE = "inventory.exchange";
-
-
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
+
 
     @Bean
     public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
@@ -32,43 +25,43 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public TopicExchange orderExchange() {
-        return new TopicExchange(ORDER_EXCHANGE);
-    }
-
-    @Bean
-    public TopicExchange paymentExchange() {
-        return new TopicExchange(PAYMENT_EXCHANGE);
-    }
-
-    @Bean
-    public TopicExchange inventoryExchange() {
-        return new TopicExchange(INVENTORY_EXCHANGE);
-    }
-
-    @Bean
-    public Queue orderQueue() {
-        return new Queue("order.queue");
-    }
-
-    @Bean
     public Queue inventoryQueue() {
         return new Queue("inventory.queue");
     }
 
     @Bean
-    public Binding bindingOrder() {
-        return BindingBuilder
-                .bind(orderQueue())
-                .to(paymentExchange())
-                .with("payment.confirmed");
+    public Queue paymentQueue() {
+        return new Queue("payment.queue");
     }
 
     @Bean
-    public Binding bindingInventory() {
+    public TopicExchange orderExchange() {
+        return new TopicExchange("order.exchange");
+    }
+
+    @Bean
+    public TopicExchange inventoryExchange() {
+        return new TopicExchange("inventory.exchange");
+    }
+
+    @Bean
+    public TopicExchange paymentExchange() {
+        return new TopicExchange("payment.exchange");
+    }
+
+    @Bean
+    public Binding bindingOrder() {
         return BindingBuilder
                 .bind(inventoryQueue())
-                .to(inventoryExchange())
-                .with("inventory.checked");
+                .to(orderExchange())
+                .with("order.created");
+    }
+
+    @Bean
+    public Binding bindingPayment() {
+        return BindingBuilder
+                .bind(paymentQueue())
+                .to(paymentExchange())
+                .with("payment.confirmed");
     }
 }
