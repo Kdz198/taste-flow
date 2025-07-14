@@ -61,6 +61,6 @@ public class Order {
 
     // Enum for order status
     public enum OrderStatus {
-        PENDING, CONFIRMED, DELIVERING, COMPLETED, CANCELLED
+        PENDING, CONFIRMED, READY_FOR_PAYMENT, COMPLETED, CANCELLED
     }
 }

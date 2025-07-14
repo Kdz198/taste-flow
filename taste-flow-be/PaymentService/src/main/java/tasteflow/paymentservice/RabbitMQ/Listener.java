@@ -31,4 +31,10 @@ public class Listener {
         paymentService.processPayment(payment);
        System.out.println("Order Confirmed " + order);
     }
+
+    @RabbitListener(queues = "payment.cancel.queue")
+    public void unlockOrder(int orderId) throws Exception {
+        System.out.println("UnLock Order: " + orderId);
+        paymentService.cancelPayment(orderId);
+    }
 }

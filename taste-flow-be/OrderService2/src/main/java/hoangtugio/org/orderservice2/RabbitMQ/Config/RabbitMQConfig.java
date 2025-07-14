@@ -52,8 +52,18 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue readyPayment() {
+        return new Queue("readyPayment.queue");
+    }
+
+    @Bean
     public Queue inventoryQueue() {
-        return new Queue("inventory.queue");
+        return new Queue("inventoryOfOrder.queue");
+    }
+
+    @Bean
+    public Queue inventoryUnlockQueue() {
+        return new Queue("inventoryUnlock.queue");
     }
 
     @Bean
@@ -70,5 +80,21 @@ public class RabbitMQConfig {
                 .bind(inventoryQueue())
                 .to(inventoryExchange())
                 .with("inventory.checked");
+    }
+
+    @Bean
+    public Binding bindingUnlockInventory() {
+        return BindingBuilder
+                .bind(inventoryUnlockQueue())
+                .to(inventoryExchange())
+                .with("inventory.unlocked");
+    }
+
+    @Bean
+    public Binding bindingReadyPayment() {
+        return BindingBuilder
+                .bind(readyPayment())
+                .to(paymentExchange())
+                .with("payment.ready");
     }
 }

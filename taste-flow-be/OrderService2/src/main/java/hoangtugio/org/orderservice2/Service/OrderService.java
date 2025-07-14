@@ -40,6 +40,7 @@ public class OrderService {
     // sau khi nhận event lock kho thì đổi state & bắn sự kiện cho payment tạo url
     public void confirmOrder (int orderId, String status) {
         Order order  = orderRepository.findById(orderId).orElseThrow();
+        System.out.println(status);
         if (status.equals("Out_Of_Stock")) {
             order.setStatus(Order.OrderStatus.CANCELLED);
         }
@@ -53,7 +54,7 @@ public class OrderService {
     }
 
     public String checkStatus (int orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository.findById(orderId).orElse(null);
         if (order != null )
             return order.getStatus().toString();
 
@@ -74,7 +75,12 @@ public class OrderService {
     public Order cancleOrder(int orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();
         order.setStatus(Order.OrderStatus.CANCELLED);
-        // Bắn event roll back compensating transaction
+        return orderRepository.save(order);
+    }
+
+    public Order readyForPayment(int orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        order.setStatus(Order.OrderStatus.READY_FOR_PAYMENT);
         return orderRepository.save(order);
     }
 }

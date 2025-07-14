@@ -21,7 +21,7 @@ public class Listener {
     public record PaymentConfirmedEvent(int orderId, int paymentId) {}
 
 
-    @RabbitListener(queues = "payment.queue")
+    @RabbitListener(queues = "paymentOfInventory.queue")
     public void confirmPayment(PaymentConfirmedEvent paymentConfirmedEvent) {
         System.out.println(paymentConfirmedEvent);
         ingredientDetailService.doneOrder(paymentConfirmedEvent.orderId);

@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tasteflow.InventoryService.RabbitMQ.Producer;
 import tasteflow.InventoryService.dto.*;
 import tasteflow.InventoryService.exception.CustomException;
 import tasteflow.InventoryService.model.*;
@@ -38,6 +39,8 @@ public class IngredientDetailService {
     private InventoryOrderService inventoryOrderService;
     @Autowired
     private InventoryOrderRepository inventoryOrderRepository;
+    @Autowired
+    private Producer producer;
 
     @Autowired
     private InventoryTransactionRepository inventoryTransactionRepository;
@@ -272,8 +275,9 @@ public class IngredientDetailService {
     public void reserve(){
         List<InventoryOrder> orders = inventoryOrderService.findAll();
         for(InventoryOrder order : orders){
-            if (order.getReceivedAt().before(Timestamp.valueOf(LocalDateTime.now().minusMinutes(10)))) {
+            if (order.getReceivedAt().before(Timestamp.valueOf(LocalDateTime.now().minusMinutes(5)))) {
                 resetReserve(order.getId());
+                producer.unLockInventory(order.getOrderId());
                 InventoryOrder inventoryOrder = inventoryOrderService.findByOrderId(order.getOrderId());
                 deleteAllOrderItems(inventoryOrder.getId());
                 inventoryOrderService.delete(inventoryOrder.getId());

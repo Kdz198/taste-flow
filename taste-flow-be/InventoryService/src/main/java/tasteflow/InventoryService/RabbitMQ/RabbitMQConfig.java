@@ -31,7 +31,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue paymentQueue() {
-        return new Queue("payment.queue");
+        return new Queue("paymentOfInventory.queue");
     }
 
     @Bean

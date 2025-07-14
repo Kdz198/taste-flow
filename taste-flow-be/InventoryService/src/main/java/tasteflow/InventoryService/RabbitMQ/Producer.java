@@ -19,4 +19,10 @@ public class Producer {
         System.out.println("Sending: " + inventoryStatus);
         rabbitTemplate.convertAndSend("inventory.exchange", "inventory.checked", inventoryStatus);
     }
+
+    public void unLockInventory ( int orderId) {
+        System.out.println("UnLock Order: " + orderId);
+        rabbitTemplate.convertAndSend("inventory.exchange", "inventory.unlocked", orderId);
+
+    }
 }
