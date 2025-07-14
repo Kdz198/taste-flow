@@ -6,50 +6,39 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, Star, Heart, ShoppingCart, Utensils, Eye } from 'lucide-react';
 import { FoodType } from '@/schemaValidations/product-schema';
-import { Category } from '@/schemaValidations/category-schema';
 import { useDispatch, useSelector } from 'react-redux';
-import { ItemToAdd } from '@/utils/type';
-import cartSlice from '@/store/slice/slice-cart';
+import { Category, CategoryMenu, ItemToAdd, Product } from '@/utils/type';
+import cartSlice, { addItemLocal } from '@/store/slice/slice-cart';
 import { RootState } from '@/store';
+import { queueAddItem } from '@/store/slice/slice-add-cart';
 
 
 
 interface MenuContentProps {
-    products: FoodType[];
-    categories: Category[];
+    products: Product[];
+    categories: CategoryMenu[];
 }
 
 export default function MenuContent({ products, categories }: MenuContentProps) {
-    const dispatch = useDispatch();
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [selectedCategory, setSelectedCategory] = useState<number | 'all'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [priceFilter, setPriceFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all');
-    const [addedToCart, setAddedToCart] = useState<string | null>(null);
-    const { userId } = useSelector((state: RootState) => state.order);
-    const cartItems = useSelector((state: RootState) => state.cart.itemsToAdd);
-
-    const handleAddToCart = (product: FoodType) => {
-        const itemToAdd: ItemToAdd = {
-            itemId: product._id,
-            name: product.name,
-            quantity: 1,
-            price: product.price,
-            img: "https://img.freepik.com/premium-photo/food-photography-4k_839182-2114.jpg"
-        };
-        dispatch(cartSlice.actions.addToCart(itemToAdd));
-
-        // Show success feedback
-        setAddedToCart(product._id);
-        setTimeout(() => setAddedToCart(null), 2000);
+    const [addedToCart, setAddedToCart] = useState<number | null>(null);
+    const dispatch = useDispatch();
+    const handleAddToCart = (product: Product) => {
+        const productId = String(product.id); 
+        const quantity = 1;
+        dispatch(queueAddItem({ productId, quantity }));
+        dispatch(addItemLocal({ productId, quantity }));
     };
-    // Filter products based on category, search, and price
+    // // Filter products based on category, search, and price
     const filteredProducts = useMemo(() => {
         let filtered = products;
 
         // Filter by category
         if (selectedCategory !== 'all') {
             filtered = filtered.filter(product =>
-                product.category.includes(selectedCategory)
+                product.categories.some(category => category.id === selectedCategory)
             );
         }
 
@@ -79,11 +68,10 @@ export default function MenuContent({ products, categories }: MenuContentProps) 
             currency: 'VND'
         }).format(price);
     };
-    const handleAddToCartClick = (product: FoodType) => {
+    const handleAddToCartClick = (product: Product) => {
         handleAddToCart(product);
-        // call api add to cart in db 
-    
-        
+
+
     }
 
     return (
@@ -133,9 +121,9 @@ export default function MenuContent({ products, categories }: MenuContentProps) 
                 </Button>
                 {categories.map((category) => (
                     <Button
-                        key={category._id}
-                        onClick={() => setSelectedCategory(category._id)}
-                        className={`rounded-full px-6 py-2 transition-all duration-300 ${selectedCategory === category._id
+                        key={category.id}
+                        onClick={() => setSelectedCategory(category.id)}
+                        className={`rounded-full px-6 py-2 transition-all duration-300 ${selectedCategory === category.id
                             ? 'bg-[#F26D16] text-white hover:bg-orange-600'
                             : 'bg-[#2A2A2A] text-[#858787] border border-[#3A3A3A] hover:bg-[#3A3A3A] hover:text-white'
                             }`}
@@ -160,7 +148,7 @@ export default function MenuContent({ products, categories }: MenuContentProps) 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredProducts.map((product) => (
                     <div
-                        key={product._id}
+                        key={product.id}
                         className="group bg-gradient-to-br from-[#2A2A2A] to-[#1A1A1A] rounded-2xl overflow-hidden border border-[#3A3A3A] hover:border-[#F26D16]/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
                     >
                         {/* Product Image */}
@@ -189,13 +177,13 @@ export default function MenuContent({ products, categories }: MenuContentProps) 
                             <div className="absolute bottom-3 left-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                                 <Button
                                     onClick={() => handleAddToCartClick(product)}
-                                    className={`flex-1 rounded-lg py-2 text-sm font-medium transition-all duration-300 ${addedToCart === product._id
+                                    className={`flex-1 rounded-lg py-2 text-sm font-medium transition-all duration-300 ${addedToCart === product.id
                                         ? 'bg-green-500 hover:bg-green-600 text-white'
                                         : 'bg-[#F26D16] hover:bg-orange-600 text-white'
                                         }`}
                                 >
                                     <ShoppingCart size={14} className="mr-1" />
-                                    {addedToCart === product._id ? 'Added!' : 'Add to Cart'}
+                                    {addedToCart === product.id ? 'Added!' : 'Add to Cart'}
                                 </Button>
                             </div>
                         </div>
@@ -208,8 +196,8 @@ export default function MenuContent({ products, categories }: MenuContentProps) 
 
                             {/* Categories */}
                             <div className="flex flex-wrap gap-1 mb-3">
-                                {product.category.slice(0, 2).map((catId, index) => {
-                                    const category = categories.find(cat => cat._id === catId);
+                                {product.categories.slice(0, 2).map((catId, index) => {
+                                    const category = categories.find(cat => cat.id === catId.id);
                                     return category ? (
                                         <span
                                             key={index}
@@ -219,8 +207,8 @@ export default function MenuContent({ products, categories }: MenuContentProps) 
                                         </span>
                                     ) : null;
                                 })}
-                                {product.category.length > 2 && (
-                                    <span className="text-xs text-[#858787]">+{product.category.length - 2}</span>
+                                {product.categories.length > 2 && (
+                                    <span className="text-xs text-[#858787]">+{product.categories.length - 2}</span>
                                 )}
                             </div>
 
@@ -228,7 +216,7 @@ export default function MenuContent({ products, categories }: MenuContentProps) 
                             <div className="flex items-center gap-4 mb-3 text-sm text-[#858787]">
                                 <div className="flex items-center gap-1">
                                     <Utensils size={12} />
-                                    <span>{product.receipt.length} ingredients</span>
+                                    <span>{product.ingredients.length} ingredients</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <Star size={12} className="text-yellow-400" fill="currentColor" />

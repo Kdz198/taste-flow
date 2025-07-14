@@ -5,7 +5,6 @@ import { useAuth } from "@/lib/auth-context";
 
 import { decodeJWT } from "@/lib/utils"
 import { LoginBodyType } from "@/schemaValidations/auth-schema"
-import orderSlice from "@/store/slice/slice-order";
 import { RegisterBodyType, RegisterRes } from "@/utils/type";
 import { useMutation } from "@tanstack/react-query"
 import axios from "axios";
@@ -13,8 +12,7 @@ import { useDispatch } from "react-redux";
 
 
 export const useLogin = (onSuccessCallback?: () => void) => {
-    const { setUser, setToken } = useAuth();
-    const dispatch = useDispatch()
+    const {  setToken } = useAuth();
     return useMutation({
         mutationFn: async (data: LoginBodyType) => {
             const res = await axios.post(
@@ -29,13 +27,12 @@ export const useLogin = (onSuccessCallback?: () => void) => {
             return res.data;
         },
 
-        onSuccess: async (token, refreshtoken) => {
+        onSuccess: async (token) => {
             setToken(token);
-
             try {
                 await axios.post(
                     `${envconfig.NEXT_PUBLIC_URL}/api/auth`,
-                    { token, refreshtoken },
+                    { token },
                     {
                         headers: {
                             'Content-Type': 'application/json',
@@ -43,11 +40,6 @@ export const useLogin = (onSuccessCallback?: () => void) => {
                         },
                     }
                 );
-                // get user info from token
-                const res = await meRequest.get();
-                const data = res.payload as RegisterRes;
-                dispatch(orderSlice.actions.setUserId(data.id))
-                setUser(data);
                 onSuccessCallback?.();
             } catch (error) {
                 console.error("Error setting auth cookie:", error);
@@ -63,7 +55,6 @@ export const useLogin = (onSuccessCallback?: () => void) => {
 export const useRegister = (onSuccessCallback?: () => void) => {
     return useMutation({
         mutationFn: async (data: RegisterBodyType) => {
-            console.log('calling registration API with data:', data);
             const res = await authApiRequest.register(data)
             if (!res.payload) {
                 throw new Error('No data returned from registration API');

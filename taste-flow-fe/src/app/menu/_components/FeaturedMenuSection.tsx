@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { Product } from "@/utils/type";
 import { Crown, Star, Clock, TrendingUp } from 'lucide-react';
-import { FoodType } from '@/schemaValidations/product-schema';
+
 
 interface FeaturedMenuSectionProps {
-  products: FoodType[];
+  products: Product[];
 }
 
 export default function FeaturedMenuSection({ products }: FeaturedMenuSectionProps) {
@@ -31,7 +32,7 @@ export default function FeaturedMenuSection({ products }: FeaturedMenuSectionPro
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {featuredProducts.map((product, index) => (
           <div
-            key={product._id}
+            key={product.id}
             className="group relative overflow-hidden rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]"
           >
             <div className="aspect-[4/5] relative">
