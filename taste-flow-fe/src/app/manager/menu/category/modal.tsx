@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import React from "react";
 
 interface CategoryFormData {
+  id?: string; // Optional for new categories
   name: string;
   status: boolean;
 }

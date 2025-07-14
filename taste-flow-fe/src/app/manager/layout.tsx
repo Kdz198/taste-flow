@@ -1,28 +1,29 @@
 "use client";
 
-import { BarChart3, ChevronRight, FolderOpen, LogOut, Settings, Users, UtensilsCrossed, X } from "lucide-react";
+import { ChevronRight, LogOut, Package, Settings, Users, UtensilsCrossed, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (Object.values(dropdownRefs.current).every((ref) => ref && !ref.contains(event.target as Node))) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const navItems = [
-    {
-      href: "/manager/dashboard",
-      label: "Dashboard",
-      icon: BarChart3,
-      description: "Overview & Analytics",
-    },
-    {
-      href: "/manager/category",
-      label: "Categories",
-      icon: FolderOpen,
-      description: "Manage food categories",
-    },
     {
       href: "/manager/user",
       label: "Users",
@@ -30,10 +31,42 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
       description: "Manage user accounts",
     },
     {
-      href: "/manager/dish",
-      label: "Dishes",
+      href: "/manager/order",
+      label: "Orders",
+      icon: Package,
+      description: "Manage orders",
+    },
+  ];
+
+  const dropdownItems = [
+    {
+      label: "Menu",
       icon: UtensilsCrossed,
-      description: "Manage menu items",
+      description: "Menu Management",
+      subItems: [
+        {
+          href: "/manager/menu/category",
+          label: "Categories",
+          description: "Manage food categories",
+        },
+        {
+          href: "/manager/menu/menu",
+          label: "Menu Items",
+          description: "Manage menu items",
+        },
+      ],
+    },
+    {
+      label: "Inventory",
+      icon: Package,
+      description: "Inventory Management",
+      subItems: [
+        {
+          href: "/manager/inventory/ingredient",
+          label: "Ingredients",
+          description: "Manage ingredients",
+        },
+      ],
     },
   ];
 
@@ -56,14 +89,14 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
       {/* Sidebar */}
       <aside
         className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        ${isSidebarCollapsed ? "w-20" : "w-80"}
-        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        bg-gradient-to-b from-[#1A1A1A] to-[#141414]
-        border-r border-[#2A2A2A]
-        transition-all duration-300 ease-in-out
-        flex flex-col
-      `}
+          fixed lg:static inset-y-0 left-0 z-50
+          ${isSidebarCollapsed ? "w-20" : "w-80"}
+          ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+          bg-gradient-to-b from-[#1A1A1A] to-[#141414]
+          border-r border-[#2A2A2A]
+          transition-all duration-300 ease-in-out
+          flex flex-col
+        `}
       >
         {/* Header */}
         <div className="p-6 border-b border-[#2A2A2A]">
@@ -116,9 +149,9 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
                 >
                   <div
                     className={`
-                    flex items-center justify-center w-10 h-10 rounded-lg transition-colors
-                    ${active ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "bg-[#2A2A2A] group-hover:bg-[#3A3A3A]"}
-                  `}
+                      flex items-center justify-center w-10 h-10 rounded-lg transition-colors
+                      ${active ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "bg-[#2A2A2A] group-hover:bg-[#3A3A3A]"}
+                    `}
                   >
                     <Icon className="w-5 h-5" />
                   </div>
@@ -127,12 +160,86 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
                     <div className="ml-3 flex-1">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{item.label}</span>
-                        {active}
                       </div>
                       <p className="text-xs text-gray-400 mt-0.5">{item.description}</p>
                     </div>
                   )}
                 </Link>
+              );
+            })}
+
+            {/* Custom Dropdown Menus */}
+            {dropdownItems.map((dropdown) => {
+              const Icon = dropdown.icon;
+              const isSubActive = dropdown.subItems.some((subItem) => isActive(subItem.href));
+
+              return (
+                <div
+                  key={dropdown.label}
+                  ref={(el: HTMLDivElement | null) => {
+                    dropdownRefs.current[dropdown.label] = el; // Assign without returning
+                  }}
+                  className="relative group"
+                  onMouseEnter={() => !isSidebarCollapsed && setOpenDropdown(dropdown.label)}
+                  onMouseLeave={() => !isSidebarCollapsed && setOpenDropdown(null)}
+                >
+                  <div
+                    className={`
+                      flex items-center p-3 rounded-xl transition-all duration-200 cursor-pointer
+                      ${
+                        isSubActive
+                          ? "bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-400"
+                          : "hover:bg-[#2A2A2A] text-gray-300 hover:text-white"
+                      }
+                    `}
+                  >
+                    <div
+                      className={`
+                        flex items-center justify-center w-10 h-10 rounded-lg transition-colors
+                        ${isSubActive ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "bg-[#2A2A2A] group-hover:bg-[#3A3A3A]"}
+                      `}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </div>
+
+                    {!isSidebarCollapsed && (
+                      <div className="ml-3 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{dropdown.label}</span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-0.5">{dropdown.description}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {!isSidebarCollapsed && openDropdown === dropdown.label && (
+                    <div
+                      className="
+                        absolute left-full top-0 w-56 bg-[#1A1A1A] border border-[#2A2A2A] text-gray-300
+                        rounded-md shadow-lg z-50
+                        group-hover:block
+                      "
+                    >
+                      {dropdown.subItems.map((subItem) => (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          className={`
+                            flex flex-col p-3
+                            ${isActive(subItem.href) ? "bg-[#2A2A2A] text-orange-400" : "hover:bg-[#2A2A2A]"}
+                          `}
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            setOpenDropdown(null);
+                          }}
+                        >
+                          <span className="font-medium">{subItem.label}</span>
+                          <span className="text-xs text-gray-400">{subItem.description}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -159,9 +266,9 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
               >
                 <div
                   className={`
-                  flex items-center justify-center w-10 h-10 rounded-lg transition-colors
-                  ${active ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "bg-[#2A2A2A] group-hover:bg-[#3A3A3A]"}
-                `}
+                    flex items-center justify-center w-10 h-10 rounded-lg transition-colors
+                    ${active ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "bg-[#2A2A2A] group-hover:bg-[#3A3A3A]"}
+                  `}
                 >
                   <Icon className="w-5 h-5" />
                 </div>
