@@ -31,5 +31,5 @@ public class Ingredient {
     private Unit unit;
 
     @Column(name="active")
-    private boolean active;
+    private boolean active = true;
 }

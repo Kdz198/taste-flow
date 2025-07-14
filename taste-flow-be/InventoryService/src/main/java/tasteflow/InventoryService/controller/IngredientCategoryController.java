@@ -12,7 +12,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ingredient-categories")
-@CrossOrigin("*")
 public class IngredientCategoryController {
     @Autowired
     private IngredientCategoryService service;

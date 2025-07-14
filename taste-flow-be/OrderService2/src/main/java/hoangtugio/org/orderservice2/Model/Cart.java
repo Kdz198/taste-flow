@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -30,5 +31,7 @@ public class Cart {
     @MapKeyColumn(name = "dish_id")
     @Column(name = "quantity")
     private Map<Integer, Integer> items = new HashMap<>();
+
+    private int quantity;
 
 }

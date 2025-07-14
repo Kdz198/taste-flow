@@ -7,7 +7,6 @@ import hoangtugio.org.orderservice2.Model.RequestOrderDTO;
 import hoangtugio.org.orderservice2.RabbitMQ.Producer.Producer;
 import hoangtugio.org.orderservice2.Repository.OrderItemRepository;
 import hoangtugio.org.orderservice2.Repository.OrderRepository;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,17 +38,49 @@ public class OrderService {
     }
 
     // sau khi nhận event lock kho thì đổi state & bắn sự kiện cho payment tạo url
-    public void confirmOrder (int orderId) {
+    public void confirmOrder (int orderId, String status) {
         Order order  = orderRepository.findById(orderId).orElseThrow();
-        order.setStatus(Order.OrderStatus.CONFIRMED);
+        System.out.println(status);
+        if (status.equals("Out_Of_Stock")) {
+            order.setStatus(Order.OrderStatus.CANCELLED);
+        }
+        else if (status.equals("Available")) {
+            order.setStatus(Order.OrderStatus.CONFIRMED);
+            producer.confirmOrder(order);
+        }
+
         orderRepository.save(order);
-        producer.confirmOrder(order);
+
+    }
+
+    public String checkStatus (int orderId) {
+        Order order = orderRepository.findById(orderId).orElse(null);
+        if (order != null )
+            return order.getStatus().toString();
+
+        else
+            return "NOT FOUND";
+    }
+
+
+
+    public void completedOrder (int orderId, int paymentId) {
+        Order order  = orderRepository.findById(orderId).orElse(null);
+        System.out.println(order);
+        order.setStatus(Order.OrderStatus.COMPLETED);
+        order.setPaymentId(paymentId);
+        orderRepository.save(order);
     }
 
     public Order cancleOrder(int orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();
         order.setStatus(Order.OrderStatus.CANCELLED);
-        // Bắn event roll back compensating transaction
+        return orderRepository.save(order);
+    }
+
+    public Order readyForPayment(int orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        order.setStatus(Order.OrderStatus.READY_FOR_PAYMENT);
         return orderRepository.save(order);
     }
 }

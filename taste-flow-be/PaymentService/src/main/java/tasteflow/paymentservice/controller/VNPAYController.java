@@ -7,10 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.view.RedirectView;
+import tasteflow.paymentservice.RabbitMQ.Producer;
 import tasteflow.paymentservice.model.Payment;
-import tasteflow.paymentservice.model.UrlPayment;
-import tasteflow.paymentservice.repository.UrlPaymentRepository;
 import tasteflow.paymentservice.service.PaymentService;
 import tasteflow.paymentservice.service.VNPAYService;
 
@@ -18,8 +16,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +30,8 @@ public class VNPAYController {
     PaymentService paymentService;
 
     @Autowired
-    UrlPaymentRepository urlPaymentRepository;
+    private Producer producer;
+
 
     @GetMapping()
     public String getVnpay(@RequestParam String id, @RequestParam int price, String bankCode) throws UnsupportedEncodingException {
@@ -44,7 +41,7 @@ public class VNPAYController {
 
 
     @GetMapping("/vnpay-return")
-    public String handleVnPayReturn(@RequestParam Map<String, String> params, HttpServletResponse httpResponse) throws IOException, UnsupportedEncodingException {
+    public String handleVnPayReturn(@RequestParam Map<String, String> params, HttpServletResponse httpResponse) throws Exception {
         Map<String, Object> response = new HashMap<>();
 
         // Lấy các thông tin quan trọng từ VNPay
@@ -87,9 +84,8 @@ public class VNPAYController {
             payment.setTransactionId(vnp_TransactionNo);
             payment.setPaymentMethod(Payment.PaymentMethod.VNPAY);
             paymentService.updatePayment(payment);
-            UrlPayment urlPayment = urlPaymentRepository.findById(payment.getOrderId()).orElse(null);
-            urlPayment.setUsed(true);
-            urlPaymentRepository.save(urlPayment);
+            producer.confirmPayment(payment.getOrderId(), payment.getId());
+
         } else {
             System.out.println("Thanh toan cancle");
         }

@@ -3,17 +3,23 @@ package tasteflow.InventoryService.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import tasteflow.InventoryService.RabbitMQ.Producer;
+import tasteflow.InventoryService.dto.*;
 import tasteflow.InventoryService.exception.CustomException;
-import tasteflow.InventoryService.model.Ingredient;
-import tasteflow.InventoryService.model.IngredientDetail;
+import tasteflow.InventoryService.model.*;
 import tasteflow.InventoryService.repository.IngredientDetailRepository;
-import tasteflow.InventoryService.repository.IngredientRepository;
+import tasteflow.InventoryService.repository.InventoryOrderRepository;
+import tasteflow.InventoryService.repository.InventoryTransactionRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class IngredientDetailService {
@@ -23,6 +29,21 @@ public class IngredientDetailService {
     private ApplicationEventPublisher eventPublisher;
     @Autowired
     private IngredientService ingredientService;
+    @Autowired
+    private MenuService menuService;
+    @Autowired
+    private IngredientDetailRepository ingredientDetailRepository;
+    @Autowired
+    private OrderItemService orderItemService;
+    @Autowired
+    private InventoryOrderService inventoryOrderService;
+    @Autowired
+    private InventoryOrderRepository inventoryOrderRepository;
+    @Autowired
+    private Producer producer;
+
+    @Autowired
+    private InventoryTransactionRepository inventoryTransactionRepository;
 
     public List<IngredientDetail> findAll() {
         return repo.findAll();
@@ -39,6 +60,7 @@ public class IngredientDetailService {
 
     public IngredientDetail save(IngredientDetail ingredientDetail) {
         eventPublisher.publishEvent(ingredientDetail);
+        ingredientDetail.setEntryDate(Date.valueOf(LocalDate.now()));
         return repo.save(ingredientDetail);
     }
 
@@ -91,4 +113,207 @@ public class IngredientDetailService {
         }
         repo.save(ingredientDetail);
     }
+    public boolean isEnoughIngredient(Map<Integer, Integer> ingredientMap) {
+        for (Map.Entry<Integer, Integer> entry : ingredientMap.entrySet()) {
+            int ingredientId = entry.getKey();
+            int quantityNeeded = entry.getValue();
+            List<IngredientDetail> ingredients = ingredientDetailRepository
+                    .findByIngredientIdOrderByExpireDateAsc(ingredientId);
+
+            int totalAvailable = 0;
+            for (IngredientDetail i : ingredients) {
+                int available = i.getQuantity() - i.getReserved();
+                if (available > 0) {
+                    totalAvailable += available;
+                }
+
+                if (totalAvailable >= quantityNeeded) break;
+            }
+
+            if (totalAvailable < quantityNeeded) {
+                return false; // thiếu nguyên liệu này
+            }
+        }
+
+        return true; // đủ hết
+    }
+
+    public Map<Integer,Integer> getIngredientFromDish(List<OrderItemDTO> orderItems){
+        Map<Integer,Integer> ingredient = new HashMap<>();
+        Menus menus = new Menus();
+        List<Integer> dishes = new ArrayList<>();
+        for (OrderItemDTO orderItem : orderItems) {
+            if(orderItem.getQuantity()>=2){
+                System.out.println(orderItem.getQuantity());
+                for(int i = 1;i<orderItem.getQuantity();i++){
+                    dishes.add(orderItem.getDishId());
+                }
+            }
+            dishes.add(orderItem.getDishId());
+        }
+        menus.setMenus(dishes);
+        Menu menu = menuService.getMenu(menus);
+        for(IngredientDTO i : menu.getData()) {
+            ingredient.put(i.getId(), i.getQuantity());
+        }
+        return ingredient;
+    }
+
+//    public Map<Integer,Integer> getIngredientFromDish1(List<OrderItemDTO> orderItems){
+//        System.out.println("getIngredientFromDish");
+//        //map này chứa ingredient id và quanity
+//        Map<Integer,Integer> ingredient = new HashMap<>();
+//        for (OrderItemDTO item : orderItems) {
+//            String dishId = item.getDishId();
+//            int quantity = item.getQuantity();
+//            // Tìm món ăn theo dishId
+//            MenuDTO menu = menuService.getMenuById(dishId);
+//        //lấy công thức từ menu ra và nhân lại để tính ra số lượng ngueyen liệu cần
+//        for(ReceiptItem r : menu.getReceipt()) {
+//            int ingredientId = r.getIdIngredient();
+//            int totalQuantity = r.getQuantity() * quantity;
+//
+//            //nếu có nguyên liệu trùng trong món thì cộng dồn cho nguyên liệu đó
+//            if (!ingredient.containsKey(ingredientId)) {
+//                ingredient.put(ingredientId, totalQuantity);
+//            } else {
+//                int old = ingredient.get(ingredientId);
+//                ingredient.put(ingredientId, old + totalQuantity);
+//            }
+//        }
+//        }
+//        return ingredient;
+//    }
+
+    @Transactional
+    public void reserveIngredients(Map<Integer, Integer> ingredientMap,InventoryOrder order) {
+        for (Map.Entry<Integer, Integer> entry : ingredientMap.entrySet()) {
+            int ingredientId = entry.getKey();
+            int quantityToReserve = entry.getValue();
+            List<IngredientDetail> details = ingredientDetailRepository
+                    .findByIngredientIdOrderByExpireDateAsc(ingredientId);
+
+            for (IngredientDetail i : details) {
+                IngredientDetail locked = ingredientDetailRepository.lockById(i.getId());
+                //lock lại detail đang thao tác
+
+                int available = locked.getQuantity() - locked.getReserved();
+
+                if (available <= 0) continue;
+                //Nếu lô hiện tại không còn nguyên liệu thì bỏ qua, chuyển sang lô tiếp theo.
+
+                int reserveAmount;
+                if (available < quantityToReserve) {
+                    reserveAmount = available;
+                } else {
+                    reserveAmount = quantityToReserve;
+                }
+                int oldReserved = locked.getReserved();
+                int newReserved = oldReserved + reserveAmount;
+                locked.setReserved(newReserved);
+                locked.setLastReservedAt(Timestamp.valueOf(LocalDateTime.now()));
+
+                //lưu item
+                saveItem(reserveAmount,order,locked.getId());
+
+                quantityToReserve -= reserveAmount;
+                ingredientDetailRepository.save(locked);
+                if (quantityToReserve == 0) break;
+            }
+
+        }
+        ingredientDetailRepository.flush();
+    }
+
+    public InventoryOrder saveOrder(List<OrderItemDTO> orderItems){
+        return inventoryOrderService.save(new InventoryOrder(orderItems.get(0).getOrder().getOrderId(),Timestamp.valueOf(LocalDateTime.now())));
+    }
+
+    public void saveItem(int quantityToReserve,InventoryOrder order,int detailId){
+            orderItemService.save(new OrderItem(detailId,quantityToReserve,order));
+    }
+
+    @Transactional
+    public boolean checkAvaiable(List<OrderItemDTO> orderItems) {
+        Map<Integer,Integer> ingredients = getIngredientFromDish(orderItems);
+        if(!isEnoughIngredient(ingredients)){
+            return false;
+        }
+        else{
+            InventoryOrder order = saveOrder(orderItems);
+            reserveIngredients(ingredients,order);
+            return true;
+        }
+    }
+
+    @Transactional
+    public void resetReserve(int orderId){
+        List<OrderItem> list = orderItemService.findByInventoryOrder_Id(orderId);
+        for(OrderItem i : list){
+            IngredientDetail detail = findById(i.getIngredientDetailId());
+            int resetReserve = i.getQuantity();
+            int newReserve = detail.getReserved() - resetReserve;
+            detail.setReserved(newReserve);
+            ingredientDetailRepository.save(detail);
+        }
+
+
+    }
+
+    @Transactional
+    public void deleteAllOrderItems(int id) {
+        List<OrderItem> items = orderItemService.findByInventoryOrder_Id(id);
+        for (OrderItem i : items) {
+            if(i.getInventoryOrder().getId() == id){
+                orderItemService.deleteByInventoryOrder_Id(i.getInventoryOrder().getId());
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void reserve(){
+        List<InventoryOrder> orders = inventoryOrderService.findAll();
+        for(InventoryOrder order : orders){
+            if (order.getReceivedAt().before(Timestamp.valueOf(LocalDateTime.now().minusMinutes(5)))) {
+                resetReserve(order.getId());
+                producer.unLockInventory(order.getOrderId());
+                InventoryOrder inventoryOrder = inventoryOrderService.findByOrderId(order.getOrderId());
+                deleteAllOrderItems(inventoryOrder.getId());
+                inventoryOrderService.delete(inventoryOrder.getId());
+            }
+        }
+
+    }
+
+    @Transactional
+    public void doneOrder(int orderId){
+        List<OrderItem> list = orderItemService.findByOrder(orderId);
+        for(OrderItem i : list){
+            IngredientDetail detail = findById(i.getIngredientDetailId());
+            int newReserve = detail.getReserved() - i.getQuantity();
+            detail.setReserved(newReserve);
+            int newQuantity = detail.getQuantity() - i.getQuantity();
+            detail.setQuantity(newQuantity);
+            save(detail);
+            //Tạo transaction theo dõi xuất kho
+            Ingredient ingredient = detail.getIngredient();
+            createOutTransaction(ingredient,i.getQuantity());
+        }
+        InventoryOrder order = inventoryOrderService.findByOrderId(orderId);
+        deleteAllOrderItems(order.getId());
+        inventoryOrderService.delete(order.getId());
+        inventoryOrderRepository.flush();
+    }
+
+    public void createOutTransaction(Ingredient ingredient,int quantity){
+        InventoryTransaction transaction = new InventoryTransaction();
+        transaction.setIngredient(ingredient);
+        transaction.setDishId(0);
+        transaction.setQuantity(quantity);
+        transaction.setDate(Date.valueOf(LocalDate.now()));
+        transaction.setTransactionType(false);
+        inventoryTransactionRepository.save(transaction);
+    }
+
 }

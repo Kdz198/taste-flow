@@ -4,15 +4,13 @@ package tasteflow.paymentservice.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tasteflow.paymentservice.RabbitMQ.Producer;
 import tasteflow.paymentservice.exception.CustomException;
 import tasteflow.paymentservice.model.Payment;
-import tasteflow.paymentservice.model.UrlPayment;
 import tasteflow.paymentservice.repository.PaymentRepository;
-import tasteflow.paymentservice.repository.UrlPaymentRepository;
 
-import java.io.UnsupportedEncodingException;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PaymentService {
@@ -26,54 +24,62 @@ public class PaymentService {
     @Autowired
     DiscountService discountService;
     @Autowired
-    private UrlPaymentRepository urlPaymentRepository;
+    Producer producer;
 
     public Payment processPayment(Payment payment) throws Exception {
-
-        String url ="";
-        int total = payment.getAmount();
-
-        // Cần lấy orderId ra, check xem có phải là KH nó thah toán lại hay ko hay cái này lần đầu xuất hiện dưới DB
-
-        Payment existPayment = paymentRepository.findByorderId(payment.getOrderId());
-        if (existPayment != null) {
-
-            // cái nào success rồi ko cho thanh toán lại
-            payment.setId(existPayment.getId());
-            if (existPayment.getStatus() == Payment.PaymentStatus.SUCCESS) {
-                throw new CustomException("Hóa đơn đã được thanh toán ", HttpStatus.BAD_REQUEST);
-            }
-        }
-        // bỏ vào DB payment trước sau đó mới gọi VNPAY/Momo để tạo url thanh toán
-        if (payment.getDiscountCode() == null)
-        {
-            System.out.println("discount deo co");
-
-        }
-        else
-        {
-            //Neu co discountId thi set discount cho cai payment
-            payment.setDiscountValue(discountService.findByDiscountCode(payment.getDiscountCode()).getDiscount());
-
-            total = payment.getAmount() - payment.getAmount()/100*discountService.findByDiscountCode(payment.getDiscountCode()).getDiscount();
-        }
-
-        if (payment.getPaymentMethod() == Payment.PaymentMethod.VNPAY) {
-            url = vnpayService.createVnpayUrl(String.valueOf(payment.getId()), total, "");
-        }
-        else if (payment.getPaymentMethod() == Payment.PaymentMethod.MOMO)
-        {
-            url = momoService.createPaymentRequest(total, String.valueOf(payment.getId()));
+        Payment p = paymentRepository.findByorderId(payment.getOrderId());
+        if (p != null) {
+            payment.setId(p.getId());
         }
 
         payment.setStatus(Payment.PaymentStatus.PENDING);
-        // Đè luôn URL payment cũ trong trường hợp thanh toán lại
-        UrlPayment urlPayment = new UrlPayment(payment.getOrderId(), url,false, LocalDateTime.now().plusMinutes(10));
-        urlPaymentRepository.save(urlPayment);
+        producer.readyPayment(payment.getOrderId());
         return paymentRepository.save(payment);
     }
 
+    public String confirmPayment (int orderId, String paymentMethod, String discountCode) throws Exception {
+        String url ="";
 
+        Payment payment = paymentRepository.findByorderId(orderId);
+        int total = payment.getAmount();
+        if (payment.getStatus() == Payment.PaymentStatus.SUCCESS) {
+            throw new CustomException("Hóa đơn đã được thanh toán ", HttpStatus.CONFLICT);
+        }
+
+        if (!discountCode.trim().isEmpty())
+        {
+            //Neu co discountId thi set discount cho cai payment
+            payment.setDiscountValue(discountService.findByDiscountCode(discountCode).getDiscount());
+            total = payment.getAmount() - payment.getAmount()/100*discountService.findByDiscountCode(discountCode).getDiscount();
+            payment.setDiscountCode(discountCode);
+        }
+        else
+        {
+            payment.setDiscountCode(null);
+            payment.setDiscountValue(0);
+        }
+
+        if (paymentMethod.equals("VNPAY")) {
+
+            url = vnpayService.createVnpayUrl(String.valueOf(payment.getId()), total, "");
+            payment.setPaymentMethod(Payment.PaymentMethod.VNPAY);
+
+        }
+        else if (paymentMethod.equals("MOMO"))
+        {
+            url = momoService.createPaymentRequest(total, String.valueOf(payment.getId()),orderId);
+            payment.setPaymentMethod(Payment.PaymentMethod.MOMO);
+        }
+
+        paymentRepository.save(payment);
+        return url;
+    }
+
+    public void cancelPayment (int orderId) throws Exception {
+        Payment payment = paymentRepository.findByorderId(orderId);
+        payment.setStatus(Payment.PaymentStatus.CANCELLED);
+        paymentRepository.save(payment);
+    }
 
 
 
@@ -84,6 +90,10 @@ public class PaymentService {
 
     public Payment getPaymentById(int id) {
         return paymentRepository.findById(id).orElseThrow();
+    }
+
+    public Optional<Payment> getPaymentByOrderId(int orderId) {
+        return Optional.ofNullable(paymentRepository.findByorderId(orderId));
     }
 
     public List<Payment> getAllPayments() {

@@ -27,13 +27,13 @@ public class MomoService {
     //private static final String REQUEST_TYPE = "captureWallet";
     private static final String REQUEST_TYPE = "payWithMethod";
 
-    public String createPaymentRequest(long amount,String paymentId) throws Exception {
+    public String createPaymentRequest(long amount,String paymentId, int orderIdreal) throws Exception {
 
         // Generate requestId and orderId
         String requestId = UUID.randomUUID().toString();
         String orderId = UUID.randomUUID().toString();
         String orderInfo = "Thanh toán đơn hàng:"+ paymentId;
-        String extraData = "extra data";
+        String extraData = String.valueOf(orderIdreal) ;
 
         // Generate raw signature
         String rawSignature = String.format(

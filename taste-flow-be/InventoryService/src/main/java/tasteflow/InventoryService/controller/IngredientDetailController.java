@@ -2,7 +2,9 @@ package tasteflow.InventoryService.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tasteflow.InventoryService.dto.OrderItemDTO;
 import tasteflow.InventoryService.model.Ingredient;
 import tasteflow.InventoryService.model.IngredientDetail;
 import tasteflow.InventoryService.service.IngredientDetailService;
@@ -12,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ingredient-details")
-@CrossOrigin("*")
 public class IngredientDetailController {
     @Autowired
     private IngredientDetailService service;
@@ -55,6 +56,17 @@ public class IngredientDetailController {
     @GetMapping("/set-active/{id}")
     public void setActiveIngredientDetails(@PathVariable int id) {
         service.setActive(id);
+    }
+
+    @GetMapping("/check-inventory")
+    public boolean checkInventory(@RequestBody List<OrderItemDTO> orderItem) {
+        return service.checkAvaiable(orderItem);
+    }
+
+    @GetMapping("/confirm-order/{id}")
+    public ResponseEntity<?> confirmOrder(@PathVariable int id) {
+        service.doneOrder(id);
+        return ResponseEntity.ok("DONE");
     }
 
 }

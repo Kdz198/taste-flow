@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -25,9 +26,9 @@ public class UserController {
     private UserRepository userRepository;
 
     @GetMapping("/me")
-    public String getCurrentUser() {
+    public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return  userRepository.findByEmail(auth.getName()).toString();
+        return  userRepository.findByEmail(auth.getName()).orElse(null);
     }
 
     @PostMapping("/register")

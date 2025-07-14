@@ -15,9 +15,15 @@ public class CartController {
     private CartService cartService;
 
     @PostMapping()
-    public Cart addToCart (@RequestParam int userId, @RequestParam int dishId, @RequestParam int quantity) {
-        return cartService.addToCart( userId, dishId, quantity );
+    public Cart addToCart (@RequestBody addToCartRequest addToCartRequest) {
+        return cartService.addToCart( addToCartRequest.userId,addToCartRequest.itemsToAdd );
     }
+
+    public record addToCartRequest(
+            int userId,
+            Map<Integer, Integer> itemsToAdd
+    ) {}
+
 
     public record RemoveCartRequest(
             int userId,
@@ -28,5 +34,10 @@ public class CartController {
     public Cart removeFromCart (@RequestBody RemoveCartRequest request) {
         Cart updatedCart = cartService.removeFromCart(request.userId(), request.itemsToRemove());
         return updatedCart;
+    }
+
+    @GetMapping("{userId}")
+    public Cart getCart(@PathVariable int userId) {
+        return cartService.getCartByUserId(userId);
     }
 }
