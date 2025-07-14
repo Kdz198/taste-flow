@@ -8,8 +8,8 @@ import { User, UserRole, UserStatus } from "@/utils/type";
 import { Calendar, Edit2, Eye, Mail, MapPin, MoreHorizontal, Phone, Trash2 } from "lucide-react";
 import React from "react";
 
+// Types
 interface UserTableProps {
-  users: User[];
   filteredUsers: User[];
   isLoading: boolean;
   searchTerm: string;
@@ -17,16 +17,18 @@ interface UserTableProps {
   onDelete: (id: string) => void;
 }
 
-const getInitials = (name: string) => {
+const getInitials = (name: string): string => {
+  if (!name) return "";
   return name
     .split(" ")
     .map((n) => n[0])
+    .filter(Boolean)
     .join("")
     .toUpperCase()
     .slice(0, 2);
 };
 
-const getRoleBadgeVariant = (role: UserRole) => {
+const getRoleBadgeVariant = (role: UserRole): "default" | "secondary" | "destructive" => {
   switch (role) {
     case UserRole.ADMIN:
       return "destructive";
@@ -37,23 +39,25 @@ const getRoleBadgeVariant = (role: UserRole) => {
   }
 };
 
-const UserTable: React.FC<UserTableProps> = ({ users, filteredUsers, isLoading, searchTerm, onEdit, onDelete }) => {
-  if (isLoading && !users.length) {
+const UserTable: React.FC<UserTableProps> = ({ filteredUsers, isLoading, searchTerm, onEdit, onDelete }) => {
+  if (isLoading && !filteredUsers.length) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="text-gray-400">Loading users...</div>
+        <div className="text-gray-400">Đang tải người dùng...</div>
       </div>
     );
   }
+
   if (filteredUsers.length === 0) {
     return (
       <div className="text-center py-12">
         <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-400">No users found</p>
-        {searchTerm && <p className="text-sm text-gray-500 mt-2">Try adjusting your search or filter criteria</p>}
+        <p className="text-gray-400">Không tìm thấy người dùng</p>
+        {searchTerm && <p className="text-sm text-gray-500 mt-2">Hãy thử điều chỉnh tiêu chí tìm kiếm hoặc bộ lọc</p>}
       </div>
     );
   }
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {filteredUsers.map((user) => (
@@ -63,11 +67,11 @@ const UserTable: React.FC<UserTableProps> = ({ users, filteredUsers, isLoading, 
               <div className="flex items-center gap-3">
                 <Avatar className="w-12 h-12">
                   <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold">
-                    {getInitials(user.name)}
+                    {getInitials(user.name || "")}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold text-white">{user.name}</h3>
+                  <h3 className="font-semibold text-white">{user.name || "Không có tên"}</h3>
                   <p className="text-sm text-gray-400">ID: {user.id}</p>
                 </div>
               </div>
@@ -80,11 +84,11 @@ const UserTable: React.FC<UserTableProps> = ({ users, filteredUsers, isLoading, 
                 <DropdownMenuContent align="end" className="bg-[#2A2A2A] border-[#3A3A3A]">
                   <DropdownMenuItem onClick={() => onEdit(user)} className="text-white hover:bg-[#3A3A3A]">
                     <Edit2 className="w-4 h-4 mr-2" />
-                    Edit
+                    Chỉnh sửa
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onDelete(user.id)} className="text-red-400 hover:bg-red-600/20">
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                    Xóa
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -92,7 +96,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, filteredUsers, isLoading, 
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2 text-sm text-gray-300">
                 <Mail className="w-4 h-4 text-gray-400" />
-                {user.email}
+                {user.email || "Không có email"}
               </div>
               {user.phone && (
                 <div className="flex items-center gap-2 text-sm text-gray-300">
@@ -108,13 +112,17 @@ const UserTable: React.FC<UserTableProps> = ({ users, filteredUsers, isLoading, 
               )}
               <div className="flex items-center gap-2 text-sm text-gray-300">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                {new Date(user.createdAt).toLocaleDateString()}
+                Tạo: {user.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN") : "Không xác định"}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                Cập nhật: {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString("vi-VN") : "Không xác định"}
               </div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
-                <Badge variant={user.status === UserStatus.ACTIVE ? "default" : "secondary"}>{user.status}</Badge>
-                <Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge>
+                <Badge variant={user.status === UserStatus.ACTIVE ? "default" : "secondary"}>{user.status || "Không xác định"}</Badge>
+                <Badge variant={getRoleBadgeVariant(user.role)}>{user.role || "Không xác định"}</Badge>
               </div>
             </div>
           </CardContent>

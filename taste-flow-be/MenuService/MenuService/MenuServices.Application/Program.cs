@@ -4,6 +4,7 @@ using MenuServices.Application.Entities;
 using MenuServices.Application.Interfaces;
 using MenuServices.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Steeltoe.Discovery.Client;
 
 namespace MenuServices.Application
 {
@@ -17,7 +18,7 @@ namespace MenuServices.Application
             builder.Services.AddControllers();
 
             //Sign in with Eureka
-            //builder.Services.AddDiscoveryClient( builder.Configuration );
+            builder.Services.AddDiscoveryClient( builder.Configuration );
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -25,7 +26,7 @@ namespace MenuServices.Application
             builder.Services.AddScoped<IRepositories<Category>, CategoryRepositories>();
             builder.Services.AddMediatR( cfg => cfg.RegisterServicesFromAssembly( typeof( Program ).Assembly ) );
             builder.Services.AddDbContext<AppDbContext>( options =>
-                options.UseSqlServer( builder.Configuration.GetConnectionString( "MenuDbConnection" ) ) );
+                options.UseNpgsql( builder.Configuration.GetConnectionString( "MenuDbConnection" ) ) );
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -54,7 +55,7 @@ namespace MenuServices.Application
             app.UseAuthorization();
 
             //Config Eureka Server
-            //app.UseDiscoveryClient();
+            app.UseDiscoveryClient();
 
             app.MapControllers();
 

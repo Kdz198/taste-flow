@@ -4,6 +4,7 @@ package tasteflow.paymentservice.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tasteflow.paymentservice.RabbitMQ.Producer;
 import tasteflow.paymentservice.exception.CustomException;
 import tasteflow.paymentservice.model.Payment;
 import tasteflow.paymentservice.repository.PaymentRepository;
@@ -22,6 +23,8 @@ public class PaymentService {
     MomoService momoService;
     @Autowired
     DiscountService discountService;
+    @Autowired
+    Producer producer;
 
     public Payment processPayment(Payment payment) throws Exception {
         Payment p = paymentRepository.findByorderId(payment.getOrderId());
@@ -30,6 +33,7 @@ public class PaymentService {
         }
 
         payment.setStatus(Payment.PaymentStatus.PENDING);
+        producer.readyPayment(payment.getOrderId());
         return paymentRepository.save(payment);
     }
 
@@ -71,7 +75,11 @@ public class PaymentService {
         return url;
     }
 
-
+    public void cancelPayment (int orderId) throws Exception {
+        Payment payment = paymentRepository.findByorderId(orderId);
+        payment.setStatus(Payment.PaymentStatus.CANCELLED);
+        paymentRepository.save(payment);
+    }
 
 
 

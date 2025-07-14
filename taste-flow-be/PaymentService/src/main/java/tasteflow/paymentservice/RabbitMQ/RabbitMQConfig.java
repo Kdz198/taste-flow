@@ -25,6 +25,10 @@ public class RabbitMQConfig {
         return rabbitTemplate;
     }
 
+    @Bean
+    public Queue cancelPaymentQueue() {
+        return new Queue("payment.cancel.queue");
+    }
 
     @Bean
     public Queue paymentQueue() {
@@ -42,6 +46,12 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public TopicExchange inventoryExchange() {
+        return new TopicExchange("inventory.exchange");
+    }
+
+
+    @Bean
     public Binding bindingOrder() {
         return BindingBuilder
                 .bind(paymentQueue())
@@ -49,7 +59,13 @@ public class RabbitMQConfig {
                 .with("order.confirmed");
     }
 
-
+    @Bean
+    public Binding bindingCancelPayment() {
+        return BindingBuilder
+                .bind(cancelPaymentQueue())
+                .to(inventoryExchange())
+                .with("inventory.unlocked");
+    }
 
 
 }

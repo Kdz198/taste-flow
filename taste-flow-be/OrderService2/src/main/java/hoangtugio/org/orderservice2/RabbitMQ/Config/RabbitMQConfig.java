@@ -16,6 +16,9 @@ public class RabbitMQConfig {
 
     public static final String PAYMENT_EXCHANGE = "payment.exchange";
 
+    public static final String INVENTORY_EXCHANGE = "inventory.exchange";
+
+
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
@@ -39,8 +42,28 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public TopicExchange inventoryExchange() {
+        return new TopicExchange(INVENTORY_EXCHANGE);
+    }
+
+    @Bean
     public Queue orderQueue() {
         return new Queue("order.queue");
+    }
+
+    @Bean
+    public Queue readyPayment() {
+        return new Queue("readyPayment.queue");
+    }
+
+    @Bean
+    public Queue inventoryQueue() {
+        return new Queue("inventoryOfOrder.queue");
+    }
+
+    @Bean
+    public Queue inventoryUnlockQueue() {
+        return new Queue("inventoryUnlock.queue");
     }
 
     @Bean
@@ -49,5 +72,29 @@ public class RabbitMQConfig {
                 .bind(orderQueue())
                 .to(paymentExchange())
                 .with("payment.confirmed");
+    }
+
+    @Bean
+    public Binding bindingInventory() {
+        return BindingBuilder
+                .bind(inventoryQueue())
+                .to(inventoryExchange())
+                .with("inventory.checked");
+    }
+
+    @Bean
+    public Binding bindingUnlockInventory() {
+        return BindingBuilder
+                .bind(inventoryUnlockQueue())
+                .to(inventoryExchange())
+                .with("inventory.unlocked");
+    }
+
+    @Bean
+    public Binding bindingReadyPayment() {
+        return BindingBuilder
+                .bind(readyPayment())
+                .to(paymentExchange())
+                .with("payment.ready");
     }
 }

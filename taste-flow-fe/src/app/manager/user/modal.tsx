@@ -1,4 +1,4 @@
-import { UserRole, UserStatus } from "@/app/utils/type";
+import { User, UserRole, UserStatus } from "@/app/utils/type";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import React from "react";
 
 interface UserFormData {
+  id?: string;
   email: string;
   password: string;
   name: string;
@@ -15,6 +16,8 @@ interface UserFormData {
   address: string;
   status: UserStatus;
   role: UserRole;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface UserModalProps {
@@ -22,15 +25,15 @@ interface UserModalProps {
   onClose: () => void;
   onSave: () => void;
   formData: UserFormData;
-  setFormData: (data: UserFormData) => void;
+  setFormData: React.Dispatch<React.SetStateAction<UserFormData>>;
   validationErrors: string[];
   isLoading: boolean;
-  selectedUser: { id?: string } | null;
+  selectedUser: User | null;
 }
 
 const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, formData, setFormData, validationErrors, isLoading, selectedUser }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={selectedUser?.id ? "Edit User" : "Add New User"} className="max-w-2xl">
+    <Modal isOpen={isOpen} onClose={onClose} title={selectedUser ? "Edit User" : "Add New User"} className="max-w-2xl">
       <div className="space-y-6">
         {/* Validation Errors */}
         {validationErrors.length > 0 && (
@@ -38,7 +41,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, formData
             <CardContent className="pt-4">
               <ul className="text-red-400 text-sm space-y-1">
                 {validationErrors.map((error, index) => (
-                  <li key={index}>• {error}</li>
+                  <li key={`error-${index}`}>• {error}</li>
                 ))}
               </ul>
             </CardContent>
@@ -139,6 +142,30 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, formData
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="createdAt" className="text-white">
+              Created At
+            </Label>
+            <Input
+              id="createdAt"
+              type="text"
+              value={formData.createdAt ? new Date(formData.createdAt).toLocaleString() : "N/A"}
+              className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
+              disabled
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="updatedAt" className="text-white">
+              Updated At
+            </Label>
+            <Input
+              id="updatedAt"
+              type="text"
+              value={formData.updatedAt ? new Date(formData.updatedAt).toLocaleString() : "N/A"}
+              className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
+              disabled
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="address" className="text-white">
@@ -164,7 +191,11 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, formData
             disabled={isLoading || !formData.name.trim() || !formData.email.trim()}
             className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
           >
-            {isLoading ? "Saving..." : selectedUser?.id ? "Update User" : "Create User"}
+            {(() => {
+              if (isLoading) return "Saving...";
+              if (selectedUser) return "Update User";
+              return "Create User";
+            })()}
           </Button>
         </div>
       </div>

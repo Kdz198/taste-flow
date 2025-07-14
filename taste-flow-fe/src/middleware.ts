@@ -1,41 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Các path cần bảo vệ
-const protectedPaths = ['/admin', '/dashboard', '/profile']
+// Các route yêu cầu đăng nhập
+const protectedRoutes = ['/admin', '/dashboard', '/profile', '/cart', '/order']
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // Kiểm tra xem path hiện tại có nằm trong danh sách protected không
-  const isProtected = protectedPaths.some((path) =>
-    pathname.startsWith(path)
-  )
-
-  // Nếu không phải route cần bảo vệ → cho đi tiếp
-  if (!isProtected) {
-    return NextResponse.next()
-  }
+  // Kiểm tra xem có nằm trong route cần bảo vệ không
+  const requiresAuth = protectedRoutes.some((route) => pathname.startsWith(route))
+  if (!requiresAuth) return NextResponse.next()
 
   // Kiểm tra token trong cookie
-  const token = req.cookies.get('access_token')?.value
+  const token = req.cookies.get('token')?.value
 
-  // Nếu không có token → redirect đến login kèm callback
+  // Nếu không có token → redirect kèm callback URL
   if (!token) {
-    return redirectToLogin(req)
+    const loginUrl = req.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    loginUrl.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
-  // Nếu có token → cho đi tiếp
+  // ✅ Nếu có token → cho phép truy cập
   return NextResponse.next()
 }
 
-// Redirect về login với callback và flag expired
-function redirectToLogin(req: NextRequest) {
-  const loginUrl = new URL('/login', req.url)
-  loginUrl.searchParams.set('callbackUrl', req.nextUrl.pathname) // quay lại trang trc khi đăng nhập
-  return NextResponse.redirect(loginUrl)
-}
-
-// Chỉ áp dụng middleware cho các path cần thiết
 export const config = {
-  matcher: ['/admin/:path*', '/dashboard/:path*', '/profile/:path*'],
+  matcher: [
+    '/admin/:path*',
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/cart/:path*',
+    '/order/:path*',
+  ],
 }

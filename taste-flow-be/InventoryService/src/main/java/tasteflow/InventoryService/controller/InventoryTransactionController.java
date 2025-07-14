@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/inventory-transactions")
-@CrossOrigin("*")
 public class InventoryTransactionController {
     @Autowired
     InventoryTransactionService service;

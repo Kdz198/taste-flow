@@ -29,13 +29,9 @@ public class OrderController {
         return orderService.cancleOrder(id);
     }
 
-    @GetMapping("test")
-    public void test(int orderid)
+    @GetMapping("{orderId}")
+    public String checkStatus(@PathVariable int orderId)
     {
-        Order order = new Order();
-        order.setOrderId(orderid);
-        order.setUserId(19);
-        order.setTotalAmount(200000);
-        producer.confirmOrder(order);
+        return orderService.checkStatus(orderId);
     }
 }

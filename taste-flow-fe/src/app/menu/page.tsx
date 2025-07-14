@@ -1,11 +1,15 @@
-import productApiRequest from "@/apiRequest/product";
 
-import MenuContent from "./_components/MenuContent";
+
 import categoryRequest from "@/apiRequest/category";
+import menuApiRequest from "@/apiRequest/menu";
+import MenuContent from "./_components/MenuContent";
+
+
 
 export default async function MenuPage() {
-    const product = await productApiRequest.getList();
+    const product = await menuApiRequest.getList();
     const categories = await categoryRequest.getCategoryList();
+
 
     return (
         <div className="text-white min-h-screen bg-gradient-to-br from-[#1A1A1A] to-[#2A2A2A]">
@@ -21,8 +25,8 @@ export default async function MenuPage() {
                 </div>
                 
                 <MenuContent 
-                    products={product.payload} 
-                    categories={categories.payload} 
+                    products={product.payload.data} 
+                    categories={categories.payload.response.data}
                 />
             </div>
         </div>

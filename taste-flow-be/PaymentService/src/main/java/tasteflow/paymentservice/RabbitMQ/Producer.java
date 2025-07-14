@@ -20,5 +20,12 @@ public class Producer {
         rabbitTemplate.convertAndSend("payment.exchange", "payment.confirmed", event);
     }
 
+    public void readyPayment(int orderId)
+    {
+        System.out.println("Ready payment " + orderId);
+        rabbitTemplate.convertAndSend("payment.exchange", "payment.ready", orderId);
+
+    }
+
 
 }

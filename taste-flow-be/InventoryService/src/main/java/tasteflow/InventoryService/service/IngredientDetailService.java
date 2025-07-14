@@ -7,14 +7,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tasteflow.InventoryService.RabbitMQ.Producer;
 import tasteflow.InventoryService.dto.*;
 import tasteflow.InventoryService.exception.CustomException;
-import tasteflow.InventoryService.model.Ingredient;
-import tasteflow.InventoryService.model.IngredientDetail;
-import tasteflow.InventoryService.model.InventoryOrder;
-import tasteflow.InventoryService.model.OrderItem;
+import tasteflow.InventoryService.model.*;
 import tasteflow.InventoryService.repository.IngredientDetailRepository;
 import tasteflow.InventoryService.repository.InventoryOrderRepository;
+import tasteflow.InventoryService.repository.InventoryTransactionRepository;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -40,7 +39,11 @@ public class IngredientDetailService {
     private InventoryOrderService inventoryOrderService;
     @Autowired
     private InventoryOrderRepository inventoryOrderRepository;
+    @Autowired
+    private Producer producer;
 
+    @Autowired
+    private InventoryTransactionRepository inventoryTransactionRepository;
 
     public List<IngredientDetail> findAll() {
         return repo.findAll();
@@ -57,6 +60,7 @@ public class IngredientDetailService {
 
     public IngredientDetail save(IngredientDetail ingredientDetail) {
         eventPublisher.publishEvent(ingredientDetail);
+        ingredientDetail.setEntryDate(Date.valueOf(LocalDate.now()));
         return repo.save(ingredientDetail);
     }
 
@@ -110,12 +114,9 @@ public class IngredientDetailService {
         repo.save(ingredientDetail);
     }
     public boolean isEnoughIngredient(Map<Integer, Integer> ingredientMap) {
-        System.out.println("Check enough ingredient");
         for (Map.Entry<Integer, Integer> entry : ingredientMap.entrySet()) {
             int ingredientId = entry.getKey();
             int quantityNeeded = entry.getValue();
-
-            System.out.println("Cần:"+ingredientId+" "+quantityNeeded);
             List<IngredientDetail> ingredients = ingredientDetailRepository
                     .findByIngredientIdOrderByExpireDateAsc(ingredientId);
 
@@ -151,18 +152,10 @@ public class IngredientDetailService {
             dishes.add(orderItem.getDishId());
         }
         menus.setMenus(dishes);
-        System.out.println("Menus"+menus.getMenus().toString());
         Menu menu = menuService.getMenu(menus);
-        for(IngredientDTO i : menu.getData()){
-            System.out.println("Ingredient Check From MEnu: "+i.getId()+"Quantity"+i.getQuantity());
-        }
-        for(IngredientDTO i : menu.getData()){
+        for(IngredientDTO i : menu.getData()) {
             ingredient.put(i.getId(), i.getQuantity());
         }
-        ingredient.forEach((id, quantity) ->
-                System.out.println("Ingredient ID: " + id + ", Quantity: " + quantity)
-        );
-
         return ingredient;
     }
 
@@ -257,11 +250,9 @@ public class IngredientDetailService {
     public void resetReserve(int orderId){
         List<OrderItem> list = orderItemService.findByInventoryOrder_Id(orderId);
         for(OrderItem i : list){
-            System.out.println("Reset");
             IngredientDetail detail = findById(i.getIngredientDetailId());
             int resetReserve = i.getQuantity();
             int newReserve = detail.getReserved() - resetReserve;
-            System.out.println(detail.getId()+"detail"+detail.getReserved());
             detail.setReserved(newReserve);
             ingredientDetailRepository.save(detail);
         }
@@ -282,13 +273,11 @@ public class IngredientDetailService {
     @Scheduled(fixedRate = 60000)
     @Transactional
     public void reserve(){
-        System.out.println("reserve");
         List<InventoryOrder> orders = inventoryOrderService.findAll();
         for(InventoryOrder order : orders){
-            System.out.println("reserve 123");
             if (order.getReceivedAt().before(Timestamp.valueOf(LocalDateTime.now().minusMinutes(5)))) {
-                System.out.println("reserve 456");
                 resetReserve(order.getId());
+                producer.unLockInventory(order.getOrderId());
                 InventoryOrder inventoryOrder = inventoryOrderService.findByOrderId(order.getOrderId());
                 deleteAllOrderItems(inventoryOrder.getId());
                 inventoryOrderService.delete(inventoryOrder.getId());
@@ -302,20 +291,29 @@ public class IngredientDetailService {
         List<OrderItem> list = orderItemService.findByOrder(orderId);
         for(OrderItem i : list){
             IngredientDetail detail = findById(i.getIngredientDetailId());
-            System.out.println(detail.getReserved());
-            System.out.println(i.getQuantity());
             int newReserve = detail.getReserved() - i.getQuantity();
-            System.out.println("new:"+newReserve);
             detail.setReserved(newReserve);
             int newQuantity = detail.getQuantity() - i.getQuantity();
-            System.out.println("Quantity:"+newQuantity);
             detail.setQuantity(newQuantity);
             save(detail);
+            //Tạo transaction theo dõi xuất kho
+            Ingredient ingredient = detail.getIngredient();
+            createOutTransaction(ingredient,i.getQuantity());
         }
         InventoryOrder order = inventoryOrderService.findByOrderId(orderId);
-        System.out.println("orderId:"+order.getId());
         deleteAllOrderItems(order.getId());
         inventoryOrderService.delete(order.getId());
         inventoryOrderRepository.flush();
     }
+
+    public void createOutTransaction(Ingredient ingredient,int quantity){
+        InventoryTransaction transaction = new InventoryTransaction();
+        transaction.setIngredient(ingredient);
+        transaction.setDishId(0);
+        transaction.setQuantity(quantity);
+        transaction.setDate(Date.valueOf(LocalDate.now()));
+        transaction.setTransactionType(false);
+        inventoryTransactionRepository.save(transaction);
+    }
+
 }
