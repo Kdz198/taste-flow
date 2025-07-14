@@ -59,7 +59,7 @@ async function httpRequest<T>(
     data?: CustomOptions | undefined
 ) {
 
-   
+
 
     const token = isClient ? TokenSession.value : undefined;
     const body =
@@ -209,9 +209,10 @@ const http = {
     },
     delete<T>(
         url: string,
+        body: any,
         data?: Omit<CustomOptions, 'body'> | undefined
     ) {
-        return httpRequest<T>('DELETE', url, data)
+        return httpRequest<T>('DELETE', url, { ...data, body })
     }
 }
 export default http

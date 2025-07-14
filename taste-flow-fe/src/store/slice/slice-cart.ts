@@ -1,58 +1,93 @@
-import { ItemToAdd, ItemsToAddPayload } from "@/utils/type";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState: ItemsToAddPayload = {
-  itemsToAdd: [],
+type CartState = {
+  userId: number | null;
+  items: {
+    [productId: string]: number; // productId: quantity
+  };
+  quantity: number; // tổng quantity
+};
+
+const initialState: CartState = {
+  userId: null,
+  items: {},
+  quantity: 0,
 };
 
 const cartSlice = createSlice({
-  name: "cart",
+  name: 'cart',
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<ItemToAdd>) => {
-      const { itemId, quantity } = action.payload;
-      const index = state.itemsToAdd.findIndex((item) => item.itemId === itemId);
-
-      if (index !== -1) {
-        state.itemsToAdd[index].quantity += quantity;
-      } else {
-        state.itemsToAdd.push(action.payload);
-      }
+    // Thiết lập lại toàn bộ cart (dùng sau khi fetch từ API)
+    setCart: (state, action: PayloadAction<CartState>) => {
+      return { ...action.payload };
     },
 
-    updateCartItemQuantity: (
+    // Clear toàn bộ cart (thường dùng khi logout hoặc đặt hàng xong)
+    clearCart: () => initialState,
+
+    // ✅ Chỉ gọi sau khi API add thành công
+    addItemLocal: (
       state,
-      action: PayloadAction<{ itemId: string; quantity: number }>
+      action: PayloadAction<{ productId: string; quantity?: number }>
     ) => {
-      const { itemId, quantity } = action.payload;
-      const index = state.itemsToAdd.findIndex((item) => item.itemId === itemId);
+      const { productId, quantity = 1 } = action.payload;
+      if (!state.items[productId]) {
+        state.items[productId] = quantity;
+      } else {
+        state.items[productId] += quantity;
+      }
+      state.quantity += quantity;
+    },
 
-      if (index !== -1) {
-        if (quantity <= 0) {
-          state.itemsToAdd.splice(index, 1);
-        } else {
-          state.itemsToAdd[index].quantity = quantity;
-        }
+    // ✅ Chỉ gọi sau khi API remove thành công
+    removeItemLocal: (
+      state,
+      action: PayloadAction<{ productId: string; quantity?: number }>
+    ) => {
+      const { productId, quantity = 1 } = action.payload;
+      if (!state.items[productId]) return;
+
+      const newQty = state.items[productId] - quantity;
+      if (newQty <= 0) {
+        state.quantity -= state.items[productId];
+        delete state.items[productId];
+      } else {
+        state.items[productId] = newQty;
+        state.quantity -= quantity;
+      }
+
+      if (state.quantity < 0) {
+        state.quantity = 0;
       }
     },
 
-    removeFromCart: (state, action: PayloadAction<{ itemId: string }>) => {
-      state.itemsToAdd = state.itemsToAdd.filter(
-        (item) => item.itemId !== action.payload.itemId
-      );
-    },
+    // ✅ Dễ dùng trong UI để set lại số lượng mới trực tiếp
+    updateItemQuantityLocal: (
+      state,
+      action: PayloadAction<{ productId: string; newQuantity: number }>
+    ) => {
+      const { productId, newQuantity } = action.payload;
+      const prevQuantity = state.items[productId] || 0;
 
-    clearCart: (state) => {
-      state.itemsToAdd = [];
+      if (newQuantity <= 0) {
+        delete state.items[productId];
+      } else {
+        state.items[productId] = newQuantity;
+      }
+
+      state.quantity += newQuantity - prevQuantity;
+      if (state.quantity < 0) state.quantity = 0;
     },
   },
 });
 
 export const {
-  addToCart,
-  updateCartItemQuantity,
-  removeFromCart,
+  setCart,
   clearCart,
+  addItemLocal,
+  removeItemLocal,
+  updateItemQuantityLocal,
 } = cartSlice.actions;
 
 export default cartSlice;

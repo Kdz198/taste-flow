@@ -1,9 +1,9 @@
-import { FoodType } from '@/schemaValidations/product-schema';
-import { Category } from '@/schemaValidations/category-schema';
+
 import { DollarSign, Package, Tag, TrendingUp } from 'lucide-react';
+import { Category, Product } from '@/utils/type';
 
 interface MenuStatsProps {
-  products: FoodType[];
+  products: Product[];
   categories: Category[];
 }
 

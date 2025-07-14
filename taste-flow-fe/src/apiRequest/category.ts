@@ -1,10 +1,12 @@
 import http from "@/lib/http";
-import { Category } from "@/schemaValidations/category-schema";
+import { CategoryMenu, ResponeHungCategory } from "@/utils/type";
+
+
 
 
 
 
 const categoryRequest = {
-    getCategoryList: () => http.get<Category[]>("/category"),
+    getCategoryList: () => http.get<ResponeHungCategory<CategoryMenu>>("/categories"),
 };
 export default categoryRequest;

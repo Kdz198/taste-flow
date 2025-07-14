@@ -36,7 +36,7 @@ export type RegisterBodyType = {
 
 
 export type RegisterRes = {
-    id: string;
+    id: number;
     email: string;
     password: string;
     name: string;
@@ -71,39 +71,139 @@ export type AddState = {
 
 
 export enum UserStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  BANNED = 'BANNED',
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+    BANNED = 'BANNED',
 }
 
 export enum UserRole {
-  CUSTOMER = 'CUSTOMER',
-  STAFF = 'STAFF',
-  MANAGER = 'MANAGER',
-  ADMIN = 'ADMIN',
+    CUSTOMER = 'CUSTOMER',
+    STAFF = 'STAFF',
+    MANAGER = 'MANAGER',
+    ADMIN = 'ADMIN',
 }
 
 export interface User {
-  id: string;
-  email: string;
-  password: string;
-  name: string;
-  phone: string;
-  address: string;
-  createdAt: string;
-  updatedAt: string;
-  status: UserStatus;
-  role: UserRole;
+    id: string;
+    email: string;
+    password: string;
+    name: string;
+    phone: string;
+    address: string;
+    createdAt: string;
+    updatedAt: string;
+    status: UserStatus;
+    role: UserRole;
 }
 
 export interface Dish {
-  id: string;
-  name: string;
-  price: number;
-  status: UserStatus;
-  category: string[];
-  receipt: string[];
-  image: string;
+    id: string;
+    name: string;
+    price: number;
+    status: UserStatus;
+    category: string[];
+    receipt: string[];
+    image: string;
+}
+
+export type CartResponse = {
+    userId: number;
+    items: {
+        [productId: string]: number;
+    };
+    quantity: number;
+};
+export type AddToCartRequest = {
+    userId: number;
+    itemsToAdd: {
+        [productId: string]: number;
+    };
+};
+export type RemoveFromCartRequest = {
+    userId: number;
+    itemsToRemove: {
+        [productId: string]: number;
+    };
+};
+
+
+export interface Ingredient {
+    id: number;
+    quantity: number;
+}
+
+export interface CategoryMenu {
+    id: number;
+    name: string;
+    status: boolean;
+}
+
+export interface Product {
+    id: number;
+    name: string;
+    price: number;
+    status: boolean;
+    imgUrl: string;
+    ingredients: Ingredient[];
+    categories: CategoryMenu[];
+}
+
+export interface ResponeHungMenu<T> {
+    success: boolean;
+    message: string;
+    data: T[];
+}
+
+export interface ResponeHungCategory<T> {
+    response: {
+        success: boolean;
+        message: string;
+        data: T[];
+    };
 }
 
 
+
+export interface OrderItem {
+    dishId: number;
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+    notes?: string;
+}
+
+export interface OrderInfo {
+    userId: number;
+    totalAmount: number;
+    deliveryAddress: string;
+}
+
+export interface OrderState {
+    order: OrderInfo | null;
+    orderItemList: OrderItem[];
+}
+
+export interface CreateOrderRequest {
+    order: OrderInfo;
+    orderItemList: OrderItem[];
+}
+
+export interface CreateOrderResponse {
+    orderId: number;
+    userId: number;
+    totalAmount: number;
+    status: string;
+    deliveryAddress: string;
+    paymentId: number;
+    discountCode: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type OrderStatus = 'NOT FOUND' | 'READY_FOR_PAYMENT' | 'COMPLETED' | 'CANCELLED' | 'PENDING';
+
+export type PaymentMethod = {
+    orderId: number;
+    paymentMethod: string;
+    discountCode?: string;
+};
