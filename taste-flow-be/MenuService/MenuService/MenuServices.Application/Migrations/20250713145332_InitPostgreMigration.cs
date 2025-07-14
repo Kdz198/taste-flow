@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace MenuServices.Application.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitPostgreMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,10 +15,10 @@ namespace MenuServices.Application.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<bool>(type: "bit", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -28,12 +29,12 @@ namespace MenuServices.Application.Migrations
                 name: "Menus",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Status = table.Column<bool>(type: "bit", nullable: false),
-                    ImgUrl = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
+                    Status = table.Column<bool>(type: "boolean", nullable: false),
+                    ImgUrl = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -44,8 +45,8 @@ namespace MenuServices.Application.Migrations
                 name: "CategoryMenu",
                 columns: table => new
                 {
-                    CategoriesId = table.Column<int>(type: "int", nullable: false),
-                    MenusId = table.Column<int>(type: "int", nullable: false)
+                    CategoriesId = table.Column<int>(type: "integer", nullable: false),
+                    MenusId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -68,14 +69,13 @@ namespace MenuServices.Application.Migrations
                 name: "Ingredients",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    MenuItemId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    MenuId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false),
+                    MenuId = table.Column<int>(type: "integer", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Ingredients", x => new { x.MenuItemId, x.Id });
+                    table.PrimaryKey("PK_Ingredients", x => new { x.MenuId, x.Id });
                     table.ForeignKey(
                         name: "FK_Ingredients_Menus_MenuId",
                         column: x => x.MenuId,
@@ -88,11 +88,6 @@ namespace MenuServices.Application.Migrations
                 name: "IX_CategoryMenu_MenusId",
                 table: "CategoryMenu",
                 column: "MenusId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ingredients_MenuId",
-                table: "Ingredients",
-                column: "MenuId");
         }
 
         /// <inheritdoc />
