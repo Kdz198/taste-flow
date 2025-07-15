@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { CreateOrderRequest, OrderItem } from '@/utils/type';
 import { useAuth } from '@/lib/auth-context';
-import { useCreateOrder, useCheckOrderStatus, useGetPaymentLink } from '@/hook/useOrder';
+import { useCreateOrder, useCheckOrderStatus, useGetPaymentLink, useDiscountCode } from '@/hook/useOrder';
 import { OrderProcessStep } from '../ProcessingOverlay';
 import { CustomerInfo } from '../CustomerForm';
 
@@ -15,6 +15,7 @@ interface UseOrderProcessingProps {
     selectedPaymentMethod: string;
     totalFromCart: number;
     customerInfo: CustomerInfo;
+    selectedDiscountCode?: string | null;
 }
 
 export const useOrderProcessing = ({
@@ -22,13 +23,15 @@ export const useOrderProcessing = ({
     deliveryOption,
     selectedPaymentMethod,
     totalFromCart,
-    customerInfo
+    customerInfo,
+    selectedDiscountCode
 }: UseOrderProcessingProps) => {
     const { user } = useAuth();
     const router = useRouter();
     const { mutateAsync: createOrder } = useCreateOrder();
     const { mutateAsync: checkStatus } = useCheckOrderStatus();
     const { mutateAsync: getPayment } = useGetPaymentLink();
+    const { data: discountCode } = useDiscountCode();
 
     const [currentStep, setCurrentStep] = useState<OrderProcessStep>(OrderProcessStep.FORM_FILLING);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -85,6 +88,7 @@ export const useOrderProcessing = ({
                     userId: user?.id ?? 0,
                     totalAmount: totalFromCart,
                     deliveryAddress: deliveryOption === 'delivery' ? customerInfo.address : 'Store Pickup',
+                    discountCode: selectedDiscountCode || undefined,
                 },
                 orderItemList: orderItems,
             };
@@ -118,12 +122,12 @@ export const useOrderProcessing = ({
                         // console.log('🔄 Checking order status for orderId:', orderId);
                         const status = await checkStatus(orderId);
                         // console.log('🔄 Checking order status:', status);
-
                         if (status === 'READY_FOR_PAYMENT') {
                             clearInterval(intervalId);
                             const paymentLink = await getPayment({
                                 orderId,
                                 paymentMethod: selectedPaymentMethod,
+                                discountCode: selectedDiscountCode || undefined,
                             });
 
                             // console.log('🔗 Payment link:', paymentLink);
@@ -134,6 +138,11 @@ export const useOrderProcessing = ({
                             } else {
                                 throw new Error('Không có link thanh toán');
                             }
+                        }
+                        if(status=== 'CANCELLED') {
+                            clearInterval(intervalId);
+                            toast.error('Kho Không đủ hàng');
+                            router.push('/cart');
                         }
                     } catch (err) {
                         console.error('❌ Lỗi khi kiểm tra trạng thái đơn:', err);

@@ -1,7 +1,7 @@
 import http, { TokenSession } from "@/lib/http";
-import { CreateOrderRequest, CreateOrderResponse } from "@/utils/type";
+import { CreateOrderRequest, CreateOrderResponse, Discount, PaymentMethod } from "@/utils/type";
 import envConfig from "@/config";
-import { get } from "http";
+
 
 
 export const orderApiRequest = {
@@ -26,28 +26,33 @@ export const orderApiRequest = {
         return status; // => status là "CANCELLED", "PENDING", v.v.
     },
     createOrder: (body: CreateOrderRequest) => http.post<CreateOrderResponse>('/order', body),
-    getPaymentLink: async (body: { paymentMethod: string, orderId: number }) => {
+    getPaymentLink: async (body: PaymentMethod) => {
         const token = TokenSession.value;
 
-        const response = await fetch(`${envConfig.NEXT_PUBLIC_API_URL}/payment?orderId=${body.orderId}&paymentMethod=${body.paymentMethod}&discountCode=`, {
+        const url = new URL(`${envConfig.NEXT_PUBLIC_API_URL}/payment`);
+        url.searchParams.append('orderId', body.orderId.toString());
+        url.searchParams.append('paymentMethod', body.paymentMethod);
+        url.searchParams.append('discountCode', body.discountCode || '');
+
+        const response = await fetch(url.toString(), {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
                 'ngrok-skip-browser-warning': 'true',
             },
-
         });
 
         if (!response.ok) {
-            const errorText = await response.text(); // đọc thông báo lỗi thuần nếu có
+            const errorText = await response.text();
             throw new Error(`HTTP ${response.status} - ${errorText}`);
         }
 
-        const paymentLink = await response.text(); // trả về đường dẫn thanh toán
-        return paymentLink; // trả về đường dẫn thanh toán
-    }
+        const paymentLink = await response.text();
+        return paymentLink;
+    },
 
+    getDiscount: () => http.get<Discount[]>('/discounts'),
 }
 
 export default orderApiRequest;
