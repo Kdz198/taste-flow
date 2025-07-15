@@ -135,6 +135,11 @@ export const useOrderProcessing = ({
                                 throw new Error('Không có link thanh toán');
                             }
                         }
+                        if(status=== 'CANCELLED') {
+                            clearInterval(intervalId);
+                            toast.error('Kho Không đủ hàng');
+                            router.push('/cart');
+                        }
                     } catch (err) {
                         console.error('❌ Lỗi khi kiểm tra trạng thái đơn:', err);
                         clearInterval(intervalId); // Dừng nếu có lỗi
