@@ -11,6 +11,7 @@ import { Category, CategoryMenu, ItemToAdd, Product } from '@/utils/type';
 import cartSlice, { addItemLocal } from '@/store/slice/slice-cart';
 import { RootState } from '@/store';
 import { queueAddItem } from '@/store/slice/slice-add-cart';
+import { toast } from 'sonner';
 
 
 
@@ -30,6 +31,7 @@ export default function MenuContent({ products, categories }: MenuContentProps) 
         const quantity = 1;
         dispatch(queueAddItem({ productId, quantity }));
         dispatch(addItemLocal({ productId, quantity }));
+        toast.success(`${product.name} added to cart!`);
     };
     // // Filter products based on category, search, and price
     const filteredProducts = useMemo(() => {

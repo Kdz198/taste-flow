@@ -6,7 +6,7 @@ import { AddToCartRequest, CartResponse, RemoveFromCartRequest } from "@/utils/t
 const cartApi = {
     addToCart: (body: AddToCartRequest) => http.post<CartResponse>('/cart', body),
     getCart: (userId:number) => http.get<CartResponse>(`/cart/${userId}`),
-    removeCart: (body: RemoveFromCartRequest) => http.delete<CartResponse>('/cart/remove', body)
+    removeCart: (body: RemoveFromCartRequest) => http.delete<CartResponse>('/cart', body)
 }
 
 export default cartApi;

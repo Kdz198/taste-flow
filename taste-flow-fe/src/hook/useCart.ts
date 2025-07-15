@@ -23,7 +23,6 @@ export const useAddToCart = () => {
     })
 }
 export const useRemoveFromCart = () => {
-    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (body: RemoveFromCartRequest) => {
             const res = await cartApi.removeCart(body);
