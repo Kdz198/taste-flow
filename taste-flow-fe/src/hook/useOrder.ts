@@ -22,10 +22,21 @@ export const useGetPaymentLink = () => {
   return useMutation({
     mutationFn: async (body: PaymentMethod) => {
          const url = await orderApiRequest.getPaymentLink(body);
-         return url as string
+         return url as string;
     },
   });
 };
+
+export const useDiscountCode =() =>{
+  return useQuery({
+    queryKey: ['discountCode'],
+    queryFn: async () => {
+      const res = await orderApiRequest.getDiscount();
+      return res.payload;
+    },
+  });
+}
+
 
 
 

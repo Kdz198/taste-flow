@@ -176,6 +176,7 @@ export interface OrderInfo {
     userId: number;
     totalAmount: number;
     deliveryAddress: string;
+    discountCode?: string;
 }
 
 export interface OrderState {
@@ -206,4 +207,15 @@ export type PaymentMethod = {
     orderId: number;
     paymentMethod: string;
     discountCode?: string;
+};
+export type Discount = {
+    id: number;
+    name: string;
+    discountCode: string;
+    startTime: string; 
+    endTime: string;   
+    coupon: string;
+    discount: number; 
+    description: string;
+    active: boolean;
 };

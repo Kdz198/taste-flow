@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { OrderItem } from '@/utils/type';
+import { Discount, OrderItem, Product } from '@/utils/type';
 import { useAuth } from '@/lib/auth-context';
-import { useMenuList } from '@/hook/useMenu';
 
 // Import components
 import ProcessingOverlay from './ProcessingOverlay';
@@ -16,23 +14,29 @@ import DeliveryOptions from './DeliveryOptions';
 import PaymentMethods from './PaymentMethods';
 import OrderSummary from './OrderSummary';
 import EmptyStates from './EmptyStates';
+import { DiscountCodeSelector } from './DiscountCodeSelector';
 import { useOrderProcessing } from './hooks/useOrderProcessing';
 
+interface OrderContentProps {
+    menuList: Product[];
+    discountCodeList: Discount[];
+}
 
-export default function OrderContent() {
-    const searchParams = useSearchParams()
-    const { data: menuList, isLoading } = useMenuList()
+export default function OrderContent({ menuList, discountCodeList }: OrderContentProps) {
     const { user } = useAuth()
     const { orderItemList } = useSelector((state: RootState) => state.order)
     const [orderItems, setOrderItems] = useState<OrderItem[]>(orderItemList)
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('MOMO')
     const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('delivery')
+    const [selectedDiscountCode, setSelectedDiscountCode] = useState<string | null>(null)
     const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
         name: user?.name || '',
         phone: user?.phone || '',
-        address: '',
+        address: user?.address || '',
         note: ''
     })
+
+
     const totalFromCart = useMemo(() => {
         return orderItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0);
     }, [orderItems]);
@@ -51,7 +55,8 @@ export default function OrderContent() {
         totalFromCart,
         deliveryOption,
         selectedPaymentMethod,
-        customerInfo
+        customerInfo,
+        selectedDiscountCode
     });
     // Auto-fill customer info khi user đã đăng nhập
     useEffect(() => {
@@ -70,10 +75,20 @@ export default function OrderContent() {
         }).format(price)
     }
 
-    // Handle loading state
-    if (isLoading) {
-        return <EmptyStates type="loading" />;
+    const handleUpdateItemNote = (dishId: number, note: string) => {
+        setOrderItems(prevItems =>
+            prevItems.map(item =>
+                item.dishId === dishId
+                    ? { ...item, notes: note }
+                    : item
+            )
+        )
     }
+
+    // // Handle loading state
+    // if (isLoading) {
+    //     return <EmptyStates type="loading" />;
+    // }
 
     // Handle no items state
     if (orderItems.length === 0) {
@@ -91,6 +106,7 @@ export default function OrderContent() {
                         orderItems={orderItems}
                         menuList={menuList}
                         formatPrice={formatPrice}
+                        onUpdateItemNote={handleUpdateItemNote}
                     />
 
                     {/* Customer Information */}
@@ -101,12 +117,19 @@ export default function OrderContent() {
                         validationErrors={validationErrors}
                         setValidationErrors={setValidationErrors}
                     />
-
+                    <DiscountCodeSelector
+                        selectedDiscountCode={selectedDiscountCode}
+                        onDiscountCodeChange={setSelectedDiscountCode}
+                        discountCodeList={discountCodeList}
+                    />
                     {/* Delivery Options */}
                     <DeliveryOptions
                         deliveryOption={deliveryOption}
                         setDeliveryOption={setDeliveryOption}
                     />
+
+                    {/* Discount Code Selector */}
+
                 </div>
 
                 {/* Payment & Order Summary */}
@@ -131,6 +154,7 @@ export default function OrderContent() {
                             isProcessing={isProcessing}
                             formatPrice={formatPrice}
                             handlePlaceOrder={handlePlaceOrder}
+                            menuList={menuList}
                         />
                     </div>
                 </div>

@@ -1,10 +1,15 @@
-import CartContent from "./_components/OrderContent";
+
+import menuApiRequest from "@/apiRequest/menu";
+import orderApiRequest from "@/apiRequest/order";
+import { OrderContent } from "./_components";
 
 
 
-export default function CartPage() {
+export default async function OrderPage() {
+    const menuList = await menuApiRequest.getList();
+    const discountCodeList = await orderApiRequest.getDiscount();
     return (
-        <div className="text-white min-h-screen bg-gradient-to-br from-[#1A1A1A] to-[#2A2A2A]">
+        <div className="">
             <div className="max-w-6xl mx-auto px-4 py-8">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -14,8 +19,8 @@ export default function CartPage() {
                         Review your order details below.
                     </p>
                 </div>
-                
-                <CartContent />
+
+                <OrderContent menuList={menuList.payload.data} discountCodeList={discountCodeList.payload} />
             </div>
         </div>
     );

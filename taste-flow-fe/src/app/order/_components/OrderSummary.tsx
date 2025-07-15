@@ -16,6 +16,7 @@ interface OrderSummaryProps {
     isProcessing: boolean;
     formatPrice: (price: number) => string;
     handlePlaceOrder: () => void;
+    menuList?: any[];
 }
 
 export default function OrderSummary({
@@ -27,7 +28,8 @@ export default function OrderSummary({
     customerInfo,
     isProcessing,
     formatPrice,
-    handlePlaceOrder
+    handlePlaceOrder,
+    menuList
 }: OrderSummaryProps) {
     return (
         <div>
@@ -78,6 +80,28 @@ export default function OrderSummary({
                     </div>
                 </div>
             </div>
+
+            {/* Special Notes Summary */}
+            {orderItems.some(item => item.notes && item.notes.trim()) && (
+                <div className="p-4 bg-[#1A1A1A] rounded-xl border border-[#3A3A3A] mb-4">
+                    <h3 className="text-white font-semibold mb-2">Special Notes</h3>
+                    <div className="space-y-2 text-sm">
+                        {orderItems
+                            .filter(item => item.notes && item.notes.trim())
+                            .map(item => (
+                                <div key={item.dishId} className="flex gap-2">
+                                    <span className="text-[#F26D16] font-medium">•</span>
+                                    <div>
+                                        <span className="text-white font-medium">
+                                            {menuList?.find(product => product.id === item.dishId)?.name || `Item #${item.dishId}`}:
+                                        </span>
+                                        <span className="text-[#858787] ml-2">{item.notes}</span>
+                                    </div>
+                                </div>
+                            ))}
+                    </div>
+                </div>
+            )}
 
             {/* Place Order Button */}
             <Button
