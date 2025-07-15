@@ -10,7 +10,9 @@ import hoangtugio.org.orderservice2.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrderService {
@@ -20,6 +22,8 @@ public class OrderService {
     OrderItemRepository orderItemRepository;
     @Autowired
     Producer producer;
+    @Autowired
+    CartService cartService;
 
     public Order makeOrder(RequestOrderDTO orderDTO) {
 
@@ -70,6 +74,10 @@ public class OrderService {
         order.setStatus(Order.OrderStatus.COMPLETED);
         order.setPaymentId(paymentId);
         orderRepository.save(order);
+
+        // Xóa ra khỏi cart
+        Map<Integer,Integer> map = findOrderItem(orderId);
+        cartService.removeFromCart(order.getUserId(), map);
     }
 
     public Order cancleOrder(int orderId) {
@@ -82,5 +90,16 @@ public class OrderService {
         Order order = orderRepository.findById(orderId).orElseThrow();
         order.setStatus(Order.OrderStatus.READY_FOR_PAYMENT);
         return orderRepository.save(order);
+    }
+
+    public Map<Integer,Integer>  findOrderItem( int orderId)
+    {
+        List<OrderItem> list = orderItemRepository.findByOrderOrderId(orderId);
+        Map<Integer,Integer> map = new HashMap<>();
+        for (OrderItem orderItem : list) {
+            map.put(orderItem.getDishId(), orderItem.getQuantity());
+        }
+        return map;
+
     }
 }

@@ -52,6 +52,7 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
+    @Transactional
     public Cart removeFromCart( int userId, Map<Integer, Integer> itemsToRemove ) {
         Cart cart = cartRepository.findById(userId).orElse(null);
         if (cart == null) {
@@ -76,6 +77,8 @@ public class CartService {
         return cartRepository.save( cart );
 
     }
+
+
 
 
 
