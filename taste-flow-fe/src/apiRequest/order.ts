@@ -29,14 +29,14 @@ export const orderApiRequest = {
     getPaymentLink: async (body: { paymentMethod: string, orderId: number }) => {
         const token = TokenSession.value;
 
-        const response = await fetch(`${envConfig.NEXT_PUBLIC_API_URL}/order/payment-link`, {
+        const response = await fetch(`${envConfig.NEXT_PUBLIC_API_URL}/payment?orderId=${body.orderId}&paymentMethod=${body.paymentMethod}&discountCode=`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
                 'ngrok-skip-browser-warning': 'true',
             },
-            body: JSON.stringify(body),
+
         });
 
         if (!response.ok) {
@@ -44,7 +44,7 @@ export const orderApiRequest = {
             throw new Error(`HTTP ${response.status} - ${errorText}`);
         }
 
-        const paymentLink = await response.json();
+        const paymentLink = await response.text(); // trả về đường dẫn thanh toán
         return paymentLink; // trả về đường dẫn thanh toán
     }
 
