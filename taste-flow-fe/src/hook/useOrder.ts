@@ -22,7 +22,7 @@ export const useGetPaymentLink = () => {
   return useMutation({
     mutationFn: async (body: PaymentMethod) => {
          const url = await orderApiRequest.getPaymentLink(body);
-         return url as { paymentLink: string };
+         return url as string
     },
   });
 };

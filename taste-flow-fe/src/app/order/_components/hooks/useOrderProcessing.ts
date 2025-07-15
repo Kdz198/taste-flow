@@ -130,7 +130,7 @@ export const useOrderProcessing = ({
                             setCurrentStep(OrderProcessStep.PROCESSING_PAYMENT);
                             if (paymentLink) {
                                 setCurrentStep(OrderProcessStep.REDIRECTING);
-                                window.location.href = paymentLink.paymentLink;
+                                window.location.href = paymentLink;
                             } else {
                                 throw new Error('Không có link thanh toán');
                             }
