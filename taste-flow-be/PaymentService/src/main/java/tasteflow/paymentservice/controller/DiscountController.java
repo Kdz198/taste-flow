@@ -24,6 +24,11 @@ public class DiscountController {
         return discountService.getDiscountById(id);
     }
 
+    @GetMapping("find")
+    public Discount getDiscountByCode(@RequestParam String discountCode) {
+        return discountService.findByDiscountCode(discountCode);
+    }
+
     @PostMapping
     public Discount createDiscount(@Valid @RequestBody Discount discount) {
         return discountService.createDiscount(discount);

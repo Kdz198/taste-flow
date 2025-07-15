@@ -33,6 +33,7 @@ public class VNPAYController {
     private Producer producer;
 
 
+
     @GetMapping()
     public String getVnpay(@RequestParam String id, @RequestParam int price, String bankCode) throws UnsupportedEncodingException {
         String paymentUrl = vnpayService.createVnpayUrl(id, price,bankCode);
@@ -41,7 +42,7 @@ public class VNPAYController {
 
 
     @GetMapping("/vnpay-return")
-    public String handleVnPayReturn(@RequestParam Map<String, String> params, HttpServletResponse httpResponse) throws Exception {
+    public void handleVnPayReturn(@RequestParam Map<String, String> params, HttpServletResponse httpResponse) throws Exception {
         Map<String, Object> response = new HashMap<>();
 
         // Lấy các thông tin quan trọng từ VNPay
@@ -90,20 +91,14 @@ public class VNPAYController {
             System.out.println("Thanh toan cancle");
         }
 
+        Payment payment = paymentService.getPaymentById(Integer.parseInt(paymentId));
         // Redirect về frontend với thông tin giao dịch qua query parameters
-        //String redirectUrl = "https://swp-301.vercel.app/payment-return?"
-        String redirectUrl = ""
-                + "status=" + (isSuccess ? "SUCCESS" : "FAILED")
-                + "&orderId=" + vnp_TxnRef
+        String redirectUrl = "http://localhost:3000/order/status?"
+                + "orderId=" + payment.getOrderId()
                 + "&amount=" + (Integer.parseInt(vnp_Amount) / 100)
-                + "&bankCode=" + vnp_BankCode
-                + "&bankTransactionNo=" + (vnp_BankTranNo != null ? vnp_BankTranNo : "")
-                + "&cardType=" + (vnp_CardType != null ? vnp_CardType : "")
-                + "&orderInfo=" + URLEncoder.encode(vnp_OrderInfo, StandardCharsets.UTF_8.toString())
-                + "&payDate=" + vnp_PayDate
-                + "&transactionNo=" + vnp_TransactionNo;
+                + "&status=" + (isSuccess ? "SUCCESS" : "FAILED")
+                + "&method=VNPAY";
 
-        //httpResponse.sendRedirect(redirectUrl);
-        return redirectUrl;
+        httpResponse.sendRedirect(redirectUrl);
     }
 }

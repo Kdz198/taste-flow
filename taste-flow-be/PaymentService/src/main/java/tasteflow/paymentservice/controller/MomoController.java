@@ -1,6 +1,7 @@
 package tasteflow.paymentservice.controller;
 
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +27,7 @@ public class MomoController {
 
 
     @GetMapping("/momo-return")
-    public ResponseEntity<Map<String, Object>> handleMomoReturn(@RequestParam Map<String, String> params) throws Exception {
+    public ResponseEntity<Map<String, Object>> handleMomoReturn(@RequestParam Map<String, String> params, HttpServletResponse httpResponse) throws Exception {
         Map<String, Object> response = new HashMap<>(params);
 
         // Trích xuất các thuộc tính từ params
@@ -62,6 +63,14 @@ public class MomoController {
         {
             System.out.println("Thanh toan cancle");
         }
+
+        String redirectUrl = "http://localhost:3000/order/status?"
+                + "orderId=" + extraData
+                + "&amount=" + amount
+                + "&status=" + (message.equals("Successful.") ? "SUCCESS" : "FAILED")
+                + "&method=MOMO";
+
+        httpResponse.sendRedirect(redirectUrl);
 
         //o day redirect ve FE voi parameter de hien thi hoa don
         return ResponseEntity.ok(response);
