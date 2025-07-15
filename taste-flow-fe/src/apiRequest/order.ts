@@ -22,7 +22,7 @@ export const orderApiRequest = {
             throw new Error(`HTTP ${response.status} - ${errorText}`);
         }
 
-        const status = await response.text(); // ✅ vì API trả về kiểu text: "CANCELLED"
+        const status = await response.text(); 
         return status; // => status là "CANCELLED", "PENDING", v.v.
     },
     createOrder: (body: CreateOrderRequest) => http.post<CreateOrderResponse>('/order', body),
