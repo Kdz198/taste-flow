@@ -120,19 +120,17 @@ export const useOrderProcessing = ({
                         // console.log('🔄 Checking order status:', status);
 
                         if (status === 'READY_FOR_PAYMENT') {
-                            clearInterval(intervalId); 
-                            setCurrentStep(OrderProcessStep.PROCESSING_PAYMENT);
-
+                            clearInterval(intervalId);
                             const paymentLink = await getPayment({
                                 orderId,
                                 paymentMethod: selectedPaymentMethod,
                             });
 
                             // console.log('🔗 Payment link:', paymentLink);
-
+                            setCurrentStep(OrderProcessStep.PROCESSING_PAYMENT);
                             if (paymentLink) {
                                 setCurrentStep(OrderProcessStep.REDIRECTING);
-                                window.location.href = paymentLink;
+                                window.location.href = paymentLink.paymentLink;
                             } else {
                                 throw new Error('Không có link thanh toán');
                             }
@@ -141,7 +139,7 @@ export const useOrderProcessing = ({
                         console.error('❌ Lỗi khi kiểm tra trạng thái đơn:', err);
                         clearInterval(intervalId); // Dừng nếu có lỗi
                     }
-                }, 1000); 
+                }, 1000);
             }
 
         } catch (error) {

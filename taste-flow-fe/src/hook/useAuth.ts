@@ -1,45 +1,21 @@
 import authApiRequest from "@/apiRequest/auth";
-import meRequest from "@/apiRequest/me";
-import envconfig from "@/config";
 import { useAuth } from "@/lib/auth-context";
-
-import { decodeJWT } from "@/lib/utils"
 import { LoginBodyType } from "@/schemaValidations/auth-schema"
-import { RegisterBodyType, RegisterRes } from "@/utils/type";
+import { RegisterBodyType } from "@/utils/type";
 import { useMutation } from "@tanstack/react-query"
-import axios from "axios";
-import { useDispatch } from "react-redux";
-
 
 export const useLogin = (onSuccessCallback?: () => void) => {
     const {  setToken } = useAuth();
     return useMutation({
         mutationFn: async (data: LoginBodyType) => {
-            const res = await axios.post(
-                `${envconfig.NEXT_PUBLIC_API_URL}/auth/login?email=${data.email}&password=${data.password}`, {},
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true',
-                    },
-                }
-            );
-            return res.data;
+           const res = await authApiRequest.login(data);
+           return res
         },
 
         onSuccess: async (token) => {
             setToken(token);
             try {
-                await axios.post(
-                    `${envconfig.NEXT_PUBLIC_URL}/api/auth`,
-                    { token },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'ngrok-skip-browser-warning': 'true',
-                        },
-                    }
-                );
+                await authApiRequest.loginToSever(token);
                 onSuccessCallback?.();
             } catch (error) {
                 console.error("Error setting auth cookie:", error);

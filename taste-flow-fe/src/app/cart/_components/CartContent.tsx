@@ -38,6 +38,7 @@ import {
   setOrderItems,
   clearOrder,
 } from "@/store/slice/slice-order";
+import { toast } from "sonner";
 type CartItems = Product & { quantity: number };
 
 export default function CartContent() {
@@ -93,7 +94,7 @@ export default function CartContent() {
     setSelectedItems(newSelectedItems);
     setIsSelectAll(checked);
 
-    // 👇 Update Redux order items
+
     const selectedCartItems = cartItems.filter(item => newSelectedItems.has(item.id));
     dispatch(setOrderItems(selectedCartItems.map(item => ({
       dishId: item.id,
@@ -140,7 +141,33 @@ export default function CartContent() {
     setIsSelectAll(newSelectedItems.size === cartItems.length - 1);
   };
 
-  const clearAllItems = () => {
+  const clearAllItems = async () => {
+    const itemsToRemove = cartItems.reduce((acc, item) => {
+      acc[item.id.toString()] = item.quantity;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Dispatch để cập nhật hàng đợi (nếu bạn vẫn cần lưu Redux)
+    cartItems.forEach(item => {
+      dispatch(queueRemoveItem({
+        productId: item.id.toString(),
+        quantity: item.quantity,
+      }));
+    });
+
+    // Gọi API xóa cart
+    if (Object.keys(itemsToRemove).length > 0) {
+      try {
+        await mutateRemove({
+          userId: user?.id || 0,
+          itemsToRemove,
+        });
+        toast.success("Cart cleared successfully!");
+      } catch (error) {
+        console.error("❌ Lỗi khi clear cart:", error);
+      }
+    }
+
     dispatch(clearCart());
     dispatch(clearAddQueue());
     dispatch(clearRemoveQueue());
@@ -148,43 +175,48 @@ export default function CartContent() {
     setIsSelectAll(false);
   };
 
+
   const selectedCartItems = cartItems.filter(item => selectedItems.has(item.id));
   const subtotal = selectedCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = selectedItems.size > 0 ? 15000 : 0;
   const total = subtotal + deliveryFee;
 
-  const handleProceedToPayment = async () => {
+
+
+  const handleAddAndRemoveCartItems = async () => {
+    const addItems = addCart.itemsToAdd;
+    const removeItems = removeCart.itemsToRemove;
+
+    if (Object.keys(addItems).length > 0) {
+      await mutateAdd({
+        userId: user?.id || 0,
+        itemsToAdd: addItems,
+      });
+    }
+
+    if (Object.keys(removeItems).length > 0) {
+      await mutateRemove({
+        userId: user?.id || 0,
+        itemsToRemove: removeItems,
+      });  
+      
+
+      Object.entries(removeItems).forEach(([productId, quantity]) => {
+        dispatch(removeItemLocal({ productId, quantity }));
+      });
+    }
+   
+    dispatch(clearAddQueue());
+    dispatch(clearRemoveQueue());
+    toast.success("Cart updated successfully!");
+  };
+
+  const handleProceedToPayment = () => {
     try {
-      const addItems = addCart.itemsToAdd;
-      const removeItems = removeCart.itemsToRemove;
-
-      // 🛒 Thêm sản phẩm vào cart
-      if (Object.keys(addItems).length > 0) {
-        await mutateAdd({
-          userId: user?.id || 0,
-          itemsToAdd: addItems,
-        });
-      }
-
-
-      if (Object.keys(removeItems).length > 0) {
-        await mutateRemove({
-          userId: user?.id || 0,
-          itemsToRemove: removeItems,
-        });
-
-        Object.entries(removeItems).forEach(([productId, quantity]) => {
-          dispatch(removeItemLocal({ productId, quantity }));
-        });
-      }
-
-
-      dispatch(clearAddQueue());
-      dispatch(clearRemoveQueue());
       dispatch(setOrderInfo({
         userId: user?.id || 0,
         totalAmount: total,
-        deliveryAddress: "Chưa có địa chỉ"
+        deliveryAddress: "Chưa có địa chỉ",
       }));
 
       router.push("/order");
@@ -192,6 +224,16 @@ export default function CartContent() {
       console.error("Error proceeding to payment:", error);
     }
   };
+
+
+
+  const handleCheckout = async () => {
+    await handleAddAndRemoveCartItems();
+    handleProceedToPayment();
+  };
+
+
+
   if (isLoading) {
     return (
       <div className="text-center py-16">
@@ -270,8 +312,8 @@ export default function CartContent() {
               <div
                 key={item.id}
                 className={`flex items-center gap-4 p-4 bg-[#1A1A1A] rounded-xl border transition-all duration-300 ${selectedItems.has(item.id)
-                    ? 'border-[#F26D16]/50 bg-[#F26D16]/5'
-                    : 'border-[#3A3A3A] hover:border-[#F26D16]/30'
+                  ? 'border-[#F26D16]/50 bg-[#F26D16]/5'
+                  : 'border-[#3A3A3A] hover:border-[#F26D16]/30'
                   }`}
               >
                 {/* Selection Checkbox */}
@@ -342,7 +384,7 @@ export default function CartContent() {
           {/* Continue Shopping */}
           <div className="mt-6 pt-6 border-t border-[#3A3A3A]">
             <Link href="/menu">
-              <Button className="bg-transparent border border-[#F26D16] text-[#F26D16] hover:bg-[#F26D16] hover:text-white rounded-full px-6 py-2 transition-all duration-300">
+              <Button onClick={() => handleAddAndRemoveCartItems()} className="bg-transparent border border-[#F26D16] text-[#F26D16] hover:bg-[#F26D16] hover:text-white rounded-full px-6 py-2 transition-all duration-300">
                 <ShoppingBag className="mr-2" size={16} />
                 Continue Shopping
               </Button>
@@ -418,9 +460,9 @@ export default function CartContent() {
 
           {/* Proceed to Order Button */}
           {selectedItems.size > 0 ? (
-              <Button onClick={() => handleProceedToPayment()} className="w-full bg-[#F26D16] hover:bg-orange-600 text-white rounded-xl py-5 font-semibold text-lg transition-all duration-300 hover:scale-[1.02]">
-                Proceed to Payment
-              </Button>
+            <Button onClick={() => handleCheckout()} className="w-full bg-[#F26D16] hover:bg-orange-600 text-white rounded-xl py-5 font-semibold text-lg transition-all duration-300 hover:scale-[1.02]">
+              Proceed to Payment
+            </Button>
           ) : (
             <Button
               disabled

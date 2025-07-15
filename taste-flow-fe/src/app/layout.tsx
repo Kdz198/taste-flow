@@ -8,6 +8,7 @@ import ClientLayoutWrapper from "./ClientLayoutWrapper";
 import { cookies } from "next/headers";
 import { AuthProvider } from "@/lib/auth-context";
 import Providers from "./providers";
+import { Toaster } from "sonner";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -38,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               disableTransitionOnChange
             >
               <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+              <Toaster richColors duration={1000} />
             </ThemeProvider>
           </AuthProvider>
         </Providers>

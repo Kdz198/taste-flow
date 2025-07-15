@@ -58,7 +58,7 @@ export default function HeaderClient() {
 
       const res = await cartApi.getCart(user.id)
       dispatch(setCart(res.payload))
-      toast.success('Add cart successfully!')
+      toast.success('Update cart successfully!')
       router.push('/cart')
     } catch (error) {
       console.error('Failed to sync cart:', error)
