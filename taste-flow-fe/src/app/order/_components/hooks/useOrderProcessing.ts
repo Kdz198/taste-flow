@@ -120,16 +120,14 @@ export const useOrderProcessing = ({
                         // console.log('🔄 Checking order status:', status);
 
                         if (status === 'READY_FOR_PAYMENT') {
-                            clearInterval(intervalId); 
-                            setCurrentStep(OrderProcessStep.PROCESSING_PAYMENT);
-
+                            clearInterval(intervalId);
                             const paymentLink = await getPayment({
                                 orderId,
                                 paymentMethod: selectedPaymentMethod,
                             });
 
                             // console.log('🔗 Payment link:', paymentLink);
-
+                            setCurrentStep(OrderProcessStep.PROCESSING_PAYMENT);
                             if (paymentLink) {
                                 setCurrentStep(OrderProcessStep.REDIRECTING);
                                 window.location.href = paymentLink;
@@ -137,11 +135,16 @@ export const useOrderProcessing = ({
                                 throw new Error('Không có link thanh toán');
                             }
                         }
+                        if(status=== 'CANCELLED') {
+                            clearInterval(intervalId);
+                            toast.error('Kho Không đủ hàng');
+                            router.push('/cart');
+                        }
                     } catch (err) {
                         console.error('❌ Lỗi khi kiểm tra trạng thái đơn:', err);
                         clearInterval(intervalId); // Dừng nếu có lỗi
                     }
-                }, 1000); 
+                }, 1000);
             }
 
         } catch (error) {
