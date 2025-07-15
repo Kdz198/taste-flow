@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Edit2, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit2, EyeIcon, MoreHorizontal, Trash2 } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 interface Category {
@@ -83,6 +84,16 @@ const IngredientTable: React.FC<IngredientTableProps> = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-[#2A2A2A] border-[#3A3A3A]">
+                    <Link
+                      href={`ingredient/${ingredient.id}`}
+                      className="flex items-center hover:underline"
+                      aria-label={`View details for ${ingredient.name}`}
+                    >
+                      <DropdownMenuItem className="text-white hover:bg-[#3A3A3A]">
+                        <EyeIcon className="w-4 h-4 mr-2" />
+                        Detail
+                      </DropdownMenuItem>
+                    </Link>
                     <DropdownMenuItem onClick={() => handleEdit(ingredient)} className="text-white hover:bg-[#3A3A3A]">
                       <Edit2 className="w-4 h-4 mr-2" />
                       Edit Ingredient
@@ -118,6 +129,15 @@ const IngredientTable: React.FC<IngredientTableProps> = ({
                 <p className="text-sm text-gray-400">Unit: {ingredient.unit}</p>
               </div>
               <div className="flex gap-2">
+                <Link
+                  href={`ingredient/${ingredient.id}`}
+                  aria-label={`View details for ${ingredient.name}`}
+                  className="bg-[#2A2A2A] border-[#3A3A3A] hover:bg-[#3A3A3A]"
+                >
+                  <Button variant="outline" size="sm" className="bg-[#2A2A2A] border-[#3A3A3A] hover:bg-[#3A3A3A]">
+                    <EyeIcon className="w-4 h-4" />
+                  </Button>
+                </Link>
                 <Button
                   variant="outline"
                   size="sm"

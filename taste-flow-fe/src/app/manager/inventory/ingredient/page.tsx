@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 const IngredientModal = dynamic(() => import("./modal"), { ssr: false });
 const IngredientTable = dynamic(() => import("./table"), { ssr: false });
 
-const API_BASE_URL = "https://1654eacd2cd1.ngrok-free.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getAuthToken = (): string | null => {
   if (typeof window !== "undefined") {
