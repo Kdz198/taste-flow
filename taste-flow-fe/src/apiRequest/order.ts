@@ -22,21 +22,21 @@ export const orderApiRequest = {
             throw new Error(`HTTP ${response.status} - ${errorText}`);
         }
 
-        const status = await response.text(); // ✅ vì API trả về kiểu text: "CANCELLED"
+        const status = await response.text(); 
         return status; // => status là "CANCELLED", "PENDING", v.v.
     },
     createOrder: (body: CreateOrderRequest) => http.post<CreateOrderResponse>('/order', body),
     getPaymentLink: async (body: { paymentMethod: string, orderId: number }) => {
         const token = TokenSession.value;
 
-        const response = await fetch(`${envConfig.NEXT_PUBLIC_API_URL}/payment`, {
+        const response = await fetch(`${envConfig.NEXT_PUBLIC_API_URL}/payment?orderId=${body.orderId}&paymentMethod=${body.paymentMethod}&discountCode=`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
                 'ngrok-skip-browser-warning': 'true',
             },
-            body: JSON.stringify(body),
+
         });
 
         if (!response.ok) {
@@ -44,7 +44,7 @@ export const orderApiRequest = {
             throw new Error(`HTTP ${response.status} - ${errorText}`);
         }
 
-        const paymentLink = await response.json();
+        const paymentLink = await response.text(); // trả về đường dẫn thanh toán
         return paymentLink; // trả về đường dẫn thanh toán
     }
 
