@@ -1,5 +1,4 @@
 "use client";
-import { User, UserRole, UserStatus } from "@/app/utils/type";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 const UserModal = dynamic(() => import("./modal"), { ssr: false });
 const UserTable = dynamic(() => import("./table"), { ssr: false });
 
-const API_BASE_URL = "https://1654eacd2cd1.ngrok-free.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Hàm utility để xử lý lỗi từ API
 const parseApiError = (error: unknown): string => {
