@@ -29,7 +29,7 @@ export const orderApiRequest = {
     getPaymentLink: async (body: { paymentMethod: string, orderId: number }) => {
         const token = TokenSession.value;
 
-        const response = await fetch(`${envConfig.NEXT_PUBLIC_API_URL}/order/payment-link`, {
+        const response = await fetch(`${envConfig.NEXT_PUBLIC_API_URL}/order/payment`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
