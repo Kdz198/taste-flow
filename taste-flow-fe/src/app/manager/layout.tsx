@@ -66,6 +66,11 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
           label: "Ingredients",
           description: "Manage ingredients",
         },
+        {
+          href: "/manager/inventory/ingredient-category",
+          label: "Ingredient Categories",
+          description: "Manage ingredient categories",
+        },
       ],
     },
   ];

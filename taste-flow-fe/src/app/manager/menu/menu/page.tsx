@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 const MenuModal = dynamic(() => import("./modal"), { ssr: false });
 const MenuTable = dynamic(() => import("./table"), { ssr: false });
 
-const API_BASE_URL = "https://1654eacd2cd1.ngrok-free.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Hàm utility để xử lý lỗi từ API
 const parseApiError = (error: unknown): string => {
