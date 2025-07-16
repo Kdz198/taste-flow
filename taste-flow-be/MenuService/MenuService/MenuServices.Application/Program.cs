@@ -42,7 +42,7 @@ namespace MenuServices.Application
                 options.NonSecurePort = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5252");
                 options.NonSecurePortEnabled = true;
                 options.SecurePortEnabled = false;
-                options.InstanceId = $"MENU-SERVICE:menu-service";
+                options.InstanceId = $"MENU-SERVICE:Menu_Service";
                 options.StatusPageUrl = $"http://menu-service:{options.NonSecurePort}/actuator/info";
                 options.HealthCheckUrl = $"http://menu-service:{options.NonSecurePort}/actuator/health";
                 options.StatusPageUrlPath = "/actuator/info";
