@@ -5,6 +5,7 @@ using MenuServices.Application.Interfaces;
 using MenuServices.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Steeltoe.Discovery.Client;
+using Steeltoe.Discovery.Eureka;
 
 namespace MenuServices.Application
 {
@@ -18,11 +19,28 @@ namespace MenuServices.Application
             builder.Services.AddControllers();
 
             //Sign in with Eureka
-            builder.Configuration["spring:cloud:discovery:enabled"] = "false";
-            builder.Services.AddDiscoveryClient( builder.Configuration );
-            builder.Services.PostConfigure<Steeltoe.Discovery.Eureka.EurekaClientOptions>(options =>
+            
+            builder.Services.Configure<EurekaClientOptions>(options =>
             {
                 options.EurekaServerServiceUrls = "https://eureka-server-8r8p.onrender.com/eureka";
+                options.ShouldRegisterWithEureka = true;
+                options.ShouldFetchRegistry = true;
+            });
+            
+            builder.Configuration["eureka:client:serviceUrl:defaultZone"] = "https://eureka-server-8r8p.onrender.com/eureka";
+            builder.Services.AddDiscoveryClient(builder.Configuration);
+
+            var isRender = Environment.GetEnvironmentVariable("RENDER") == "true";
+            var hostname = isRender ? "menu-service-bqae.onrender.com" : "localhost";
+            var portStr = Environment.GetEnvironmentVariable("PORT");
+            var port = string.IsNullOrEmpty(portStr) ? 5252 : int.Parse(portStr);
+
+            builder.Services.PostConfigure<EurekaInstanceOptions>(options =>
+            {
+                options.AppName = "MENU-SERVICE";
+                options.HostName = hostname;
+                options.NonSecurePort = port;
+                options.PreferIpAddress = false;
             });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
