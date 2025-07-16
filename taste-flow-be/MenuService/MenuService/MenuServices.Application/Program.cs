@@ -38,7 +38,7 @@ namespace MenuServices.Application
             builder.Services.PostConfigure<EurekaInstanceOptions>(options =>
             {
                 options.AppName = "MENU-SERVICE";
-                options.HostName = "menu-service"; // Dùng internal service name
+                options.HostName = "Menu_Service"; // Dùng internal service name
                 options.NonSecurePort = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5252");
                 options.NonSecurePortEnabled = true;
                 options.SecurePortEnabled = false;
