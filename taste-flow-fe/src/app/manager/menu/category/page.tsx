@@ -81,26 +81,26 @@ class CategoryApiService {
   }
 
   static async fetchCategories(): Promise<Category[]> {
-    const data = await this.makeRequest<{ response: { data: Category[] } }>("/api/categories");
+    const data = await this.makeRequest<{ response: { data: Category[] } }>("/categories");
     return Array.isArray(data.response.data) ? data.response.data : [];
   }
 
   static async createCategory(categoryData: Omit<Category, "id">): Promise<Category> {
-    return this.makeRequest<Category>("/api/categories", {
+    return this.makeRequest<Category>("/categories", {
       method: "POST",
       body: JSON.stringify(categoryData),
     });
   }
 
   static async updateCategory(id: string, categoryData: Category): Promise<Category> {
-    return this.makeRequest<Category>(`/api/categories/${id}`, {
+    return this.makeRequest<Category>(`/categories/${id}`, {
       method: "PUT",
       body: JSON.stringify(categoryData),
     });
   }
 
   static async deleteCategory(id: string): Promise<{ success: boolean }> {
-    return this.makeRequest<{ success: boolean }>(`/api/categories/${id}`, {
+    return this.makeRequest<{ success: boolean }>(`/categories/${id}`, {
       method: "DELETE",
     });
   }

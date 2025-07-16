@@ -125,24 +125,24 @@ class IngredientDetailApiService {
   }
 
   static async fetchIngredientDetails(ingredientId: string): Promise<IngredientDetail[]> {
-    const data = await this.makeRequest<IngredientDetail[]>(`/api/ingredient-details/find-by-ingredient/${ingredientId}`);
+    const data = await this.makeRequest<IngredientDetail[]>(`/ingredient-details/find-by-ingredient/${ingredientId}`);
     return Array.isArray(data) ? data : [];
   }
 
   static async fetchIngredients(): Promise<Ingredient[]> {
-    const data = await this.makeRequest<Ingredient[]>("/api/ingredients", {}, 1);
+    const data = await this.makeRequest<Ingredient[]>("/ingredients", {}, 1);
     return Array.isArray(data) ? data : [];
   }
 
   static async createIngredientDetail(detailData: IngredientDetailFormData): Promise<IngredientDetail> {
-    return this.makeRequest<IngredientDetail>("/api/ingredient-details", {
+    return this.makeRequest<IngredientDetail>("/ingredient-details", {
       method: "POST",
       body: JSON.stringify(detailData),
     });
   }
 
   static async updateIngredientDetail(id: number, detailData: IngredientDetailFormData): Promise<IngredientDetail> {
-    return this.makeRequest<IngredientDetail>(`/api/ingredient-details`, {
+    return this.makeRequest<IngredientDetail>(`/ingredient-details`, {
       method: "PUT",
       body: JSON.stringify(detailData),
     });
@@ -150,7 +150,7 @@ class IngredientDetailApiService {
 
   static async deleteIngredientDetail(id: number): Promise<{ success: boolean; message?: string }> {
     try {
-      return this.makeRequest<{ success: boolean; message?: string }>(`/api/ingredient-details/${id}`, {
+      return this.makeRequest<{ success: boolean; message?: string }>(`/ingredient-details/${id}`, {
         method: "DELETE",
       });
     } catch (error) {
