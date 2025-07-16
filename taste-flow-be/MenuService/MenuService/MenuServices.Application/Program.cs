@@ -18,6 +18,7 @@ namespace MenuServices.Application
             builder.Services.AddControllers();
 
             //Sign in with Eureka
+            builder.Configuration["spring:cloud:discovery:enabled"] = "false";
             builder.Services.AddDiscoveryClient( builder.Configuration );
             builder.Services.PostConfigure<Steeltoe.Discovery.Eureka.EurekaClientOptions>(options =>
             {
