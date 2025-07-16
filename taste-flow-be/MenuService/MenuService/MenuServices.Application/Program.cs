@@ -43,7 +43,7 @@ namespace MenuServices.Application
                 options.NonSecurePortEnabled = true;
                 options.SecurePortEnabled = false;
                 options.PreferIpAddress = false;
-                options.InstanceId = $"MENU-SERVICE:{hostname}";
+                options.InstanceId = $"MENU-SERVICE:{hostname}:{port}";
                 
                 options.StatusPageUrlPath = "/actuator/info";
                 options.HealthCheckUrlPath = "/actuator/health";
