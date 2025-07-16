@@ -101,7 +101,7 @@ class UserApiService {
   }
 
   static async fetchUsers(): Promise<User[]> {
-    const data = await this.makeRequest<{ success: boolean; message: string; data: User[] }>("/api/users");
+    const data = await this.makeRequest<{ success: boolean; message: string; data: User[] }>("/users");
     return Array.isArray(data.data) ? data.data : [];
   }
 
@@ -114,7 +114,7 @@ class UserApiService {
     status: UserStatus;
     role: UserRole;
   }): Promise<User> {
-    return this.makeRequest<User>("/api/users", {
+    return this.makeRequest<User>("/users", {
       method: "POST",
       body: JSON.stringify(userData),
     });
@@ -132,14 +132,14 @@ class UserApiService {
       role: UserRole;
     }
   ): Promise<User> {
-    return this.makeRequest<User>(`/api/users/${id}`, {
+    return this.makeRequest<User>(`/users/${id}`, {
       method: "PUT",
       body: JSON.stringify(userData),
     });
   }
 
   static async deleteUser(id: string): Promise<{ success: boolean; message?: string }> {
-    return this.makeRequest<{ success: boolean; message?: string }>(`/api/users/${id}`, {
+    return this.makeRequest<{ success: boolean; message?: string }>(`/users/${id}`, {
       method: "DELETE",
     });
   }
