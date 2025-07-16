@@ -56,7 +56,7 @@ namespace MenuServices.Application
             
 
             app.MapControllers();
-            Console.WriteLine("Resolved Eureka URL: " + builder.Configuration["eureka:client:serviceUrl"]);
+            Console.WriteLine("Resolved Eureka URL: " + builder.Configuration["eureka:client:serviceUrl:defaultZone"]);
 
             app.Run();
         }
