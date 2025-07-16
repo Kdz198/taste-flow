@@ -34,7 +34,7 @@ namespace MenuServices.Application
             var hostname = isRender ? "menu-service-bqae.onrender.com" : "localhost";
             var portStr = Environment.GetEnvironmentVariable("PORT");
             var port = string.IsNullOrEmpty(portStr) ? 5252 : int.Parse(portStr);
-
+            builder.WebHost.UseUrls($"http://*:{port}"); // BẮT BUỘC để listen đúng cổng
             builder.Services.PostConfigure<EurekaInstanceOptions>(options =>
             {
                 options.AppName = "MENU-SERVICE";
@@ -44,6 +44,9 @@ namespace MenuServices.Application
                 options.SecurePortEnabled = false;
                 options.PreferIpAddress = false;
                 options.InstanceId = $"MENU-SERVICE:{hostname}";
+                
+                options.StatusPageUrlPath = "/actuator/info";
+                options.HealthCheckUrlPath = "/actuator/health";
             });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
