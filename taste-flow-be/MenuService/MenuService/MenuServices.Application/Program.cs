@@ -40,7 +40,10 @@ namespace MenuServices.Application
                 options.AppName = "MENU-SERVICE";
                 options.HostName = hostname;
                 options.NonSecurePort = port;
+                options.NonSecurePortEnabled = true;
+                options.SecurePortEnabled = false;
                 options.PreferIpAddress = false;
+                options.InstanceId = $"MENU-SERVICE:{hostname}";
             });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -80,7 +83,7 @@ namespace MenuServices.Application
 
             app.MapControllers();
             Console.WriteLine("Resolved Eureka URL: " + builder.Configuration["eureka:client:serviceUrl:defaultZone"]);
-
+            Console.WriteLine($"🌐 Running on PORT: {port}");
             app.Run();
         }
     }
