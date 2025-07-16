@@ -38,19 +38,15 @@ namespace MenuServices.Application
             builder.Services.PostConfigure<EurekaInstanceOptions>(options =>
             {
                 options.AppName = "MENU-SERVICE";
-                options.HostName = hostname;
-                options.NonSecurePort = port;
+                options.HostName = "menu-service"; // Dùng internal service name
+                options.NonSecurePort = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5252");
                 options.NonSecurePortEnabled = true;
                 options.SecurePortEnabled = false;
-                options.PreferIpAddress = false;
-
-                // ⚠️ Sửa tại đây:
-                options.InstanceId = $"MENU-SERVICE:{hostname}"; // KHÔNG thêm :{port}
-                options.StatusPageUrl = $"https://{hostname}/actuator/info";
-                options.HealthCheckUrl = $"https://{hostname}/actuator/health";
-
-                options.StatusPageUrlPath = null;
-                options.HealthCheckUrlPath = null;
+                options.InstanceId = $"MENU-SERVICE:menu-service";
+                options.StatusPageUrl = $"http://menu-service:{options.NonSecurePort}/actuator/info";
+                options.HealthCheckUrl = $"http://menu-service:{options.NonSecurePort}/actuator/health";
+                options.StatusPageUrlPath = "/actuator/info";
+                options.HealthCheckUrlPath = "/actuator/health";
             });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
