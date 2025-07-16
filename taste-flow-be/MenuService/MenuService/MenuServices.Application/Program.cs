@@ -34,7 +34,7 @@ namespace MenuServices.Application
             var hostname = isRender ? "menu-service-bqae.onrender.com" : "localhost";
             var portStr = Environment.GetEnvironmentVariable("PORT");
             var port = string.IsNullOrEmpty(portStr) ? 5252 : int.Parse(portStr);
-            builder.WebHost.UseUrls($"http://*:{port}"); // BẮT BUỘC để listen đúng cổng
+            builder.WebHost.UseUrls($"http://0.0.0.0:{port}"); // phải là 0.0.0.0 để mở port public
             builder.Services.PostConfigure<EurekaInstanceOptions>(options =>
             {
                 options.AppName = "MENU-SERVICE";
