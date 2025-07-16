@@ -43,10 +43,14 @@ namespace MenuServices.Application
                 options.NonSecurePortEnabled = true;
                 options.SecurePortEnabled = false;
                 options.PreferIpAddress = false;
-                options.InstanceId = $"MENU-SERVICE:{hostname}:{port}";
-                
-                options.StatusPageUrlPath = "/actuator/info";
-                options.HealthCheckUrlPath = "/actuator/health";
+
+                // ⚠️ Sửa tại đây:
+                options.InstanceId = $"MENU-SERVICE:{hostname}"; // KHÔNG thêm :{port}
+                options.StatusPageUrl = $"https://{hostname}/actuator/info";
+                options.HealthCheckUrl = $"https://{hostname}/actuator/health";
+
+                options.StatusPageUrlPath = null;
+                options.HealthCheckUrlPath = null;
             });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
