@@ -38,13 +38,13 @@ namespace MenuServices.Application
             builder.Services.PostConfigure<EurekaInstanceOptions>(options =>
             {
                 options.AppName = "MENU-SERVICE";
-                options.HostName = "Menu_Service"; // Dùng internal service name
-                options.NonSecurePort = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5252");
+                options.HostName = "Menu_Service"; // Internal service name
+                options.NonSecurePort = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "10000"); // Sử dụng port thực tế
                 options.NonSecurePortEnabled = true;
                 options.SecurePortEnabled = false;
-                options.InstanceId = $"MENU-SERVICE:Menu_Service";
-                options.StatusPageUrl = $"http://menu-service:{options.NonSecurePort}/actuator/info";
-                options.HealthCheckUrl = $"http://menu-service:{options.NonSecurePort}/actuator/health";
+                options.InstanceId = $"MENU-SERVICE:Menu_Service:{options.NonSecurePort}"; // Thêm port để duy nhất
+                options.StatusPageUrl = $"http://Menu_Service:{options.NonSecurePort}/actuator/info";
+                options.HealthCheckUrl = $"http://Menu_Service:{options.NonSecurePort}/actuator/health";
                 options.StatusPageUrlPath = "/actuator/info";
                 options.HealthCheckUrlPath = "/actuator/health";
             });
