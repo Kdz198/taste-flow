@@ -19,6 +19,10 @@ namespace MenuServices.Application
 
             //Sign in with Eureka
             builder.Services.AddDiscoveryClient( builder.Configuration );
+            builder.Services.PostConfigure<Steeltoe.Discovery.Eureka.EurekaClientOptions>(options =>
+            {
+                options.EurekaServerServiceUrls = "https://eureka-server-8r8p.onrender.com/eureka";
+            });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
