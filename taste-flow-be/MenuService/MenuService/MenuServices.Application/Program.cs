@@ -53,9 +53,7 @@ namespace MenuServices.Application
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
-            //Config Eureka Server
-            app.UseDiscoveryClient();
+            
 
             app.MapControllers();
 

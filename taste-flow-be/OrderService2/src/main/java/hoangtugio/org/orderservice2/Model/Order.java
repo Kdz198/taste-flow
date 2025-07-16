@@ -51,6 +51,11 @@ public class Order {
     @Column
     private String discountCode;
 
+    @Size(max = 255, message = "Notes must not exceed 255 characters")
+    @Nationalized
+    @Column
+    private String notes;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
