@@ -30,7 +30,12 @@ public class Listener {
 
     @RabbitListener(queues = "inventory.queue")
     public void receive(List<OrderItemDTO> orderItem) {
-        int orderId = orderItem.getFirst().getOrder().getOrderId();
-        producer.checkInventory(orderId, ingredientDetailService.checkAvaiable(orderItem));
+        try {
+            int orderId = orderItem.getFirst().getOrder().getOrderId();
+            producer.checkInventory(orderId, ingredientDetailService.checkAvaiable(orderItem));
+        }
+        catch (Exception e) {
+            System.out.println("Error while checking avaiable: "+ e.getMessage());
+        }
     }
 }
