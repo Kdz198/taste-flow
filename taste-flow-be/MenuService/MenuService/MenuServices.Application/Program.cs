@@ -4,6 +4,7 @@ using MenuServices.Application.Interfaces;
 using MenuServices.Application.Repositories;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Steeltoe.Discovery.Client;
 using Steeltoe.Discovery.Eureka;
 
@@ -49,6 +50,9 @@ namespace MenuServices.Application
                 options.HealthCheckUrlPath = "/actuator/health";
             });
 
+            // Add Health Checks
+            builder.Services.AddHealthChecks(); // Basic health check registration
+
             // Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -78,7 +82,7 @@ namespace MenuServices.Application
                 app.UseSwaggerUI();
             }
 
-            // Health check endpoint (simplified)
+            // Health check endpoint
             app.MapHealthChecks("/actuator/health", new HealthCheckOptions
             {
                 ResponseWriter = async (context, report) =>
