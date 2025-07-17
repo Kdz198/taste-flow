@@ -14,7 +14,7 @@ import tasteflow.InventoryService.dto.Menus;
 import java.util.List;
 
 
-@FeignClient(name = "MENU-SERVICE")
+@FeignClient(name = "menu-service-direct", url = "https://menu-service-bqae.onrender.com")
 public interface MenuClient {
     @GetMapping("/api/menu")
    List<MenuDTO> getMenus();
