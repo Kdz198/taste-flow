@@ -6,20 +6,18 @@ import {
   useEffect,
   useState,
   ReactNode,
+  useRef,
 } from 'react'
 import { TokenSession } from '@/lib/http'
 import { RegisterRes } from '@/utils/type'
 import meRequest from '@/apiRequest/me'
-import { useDispatch } from 'react-redux'
 import cartApi from '@/apiRequest/cart'
-import { setCart } from '@/store/slice/slice-cart'
-
+import { useDispatch } from 'react-redux'
+import cartSlice, { setCart } from '@/store/slice/slice-cart'
 
 type AuthContextType = {
   user: RegisterRes | null
   setUser: (user: RegisterRes | null) => void
-  token: string | null
-  setToken: (token: string | null) => void
   isLoading: boolean
   logout: () => void
 }
@@ -34,109 +32,53 @@ export function AuthProvider({
   token: string | null
 }) {
   const [user, setUser] = useState<RegisterRes | null>(null)
-  const [token, setTokenState] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true);
-  const dispatch = useDispatch();
-  const logout = () => {
-    setUser(null)
-    setTokenState(null)
-    TokenSession.value = ''
-    TokenSession.expiresAt = new Date().toISOString()
+  const [isLoading, setIsLoading] = useState(true)
+  const dispatch = useDispatch()
 
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token')
-      localStorage.removeItem('token_expires_at')
-    }
-  }
-
-  const setToken = (value: string | null) => {
-    setTokenState(value)
-    TokenSession.value = value ?? ''
-
-    const expiresAt = value
-      ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      : new Date().toISOString()
-
-    TokenSession.expiresAt = expiresAt
-
-    if (typeof window !== 'undefined') {
-      if (value) {
-        localStorage.setItem('token', value)
-        localStorage.setItem('token_expires_at', expiresAt)
-      } else {
-        localStorage.removeItem('token')
-        localStorage.removeItem('token_expires_at')
-      }
-    }
-  }
-
-
+  // Gán token từ server khi F5 / reload
   useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const localToken = localStorage.getItem('token')
-    const localExpiresAt = localStorage.getItem('token_expires_at')
-    const isExpired = localExpiresAt && localExpiresAt < new Date().toISOString()
-
-    const tokenToUse = initialTokenFromServer || (!isExpired ? localToken : null)
-
-    if (tokenToUse) {
-      setToken(tokenToUse)
-    } else {
-      logout()
+    console.log(1)
+    if (initialTokenFromServer && typeof window !== 'undefined') {
+      TokenSession.value = initialTokenFromServer
+      TokenSession.expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString() // tùy logic set thời hạn
     }
-
-    setIsLoading(false)
   }, [initialTokenFromServer])
 
-
   useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const handleFocus = () => {
-      const localToken = localStorage.getItem('token')
-      const localExpiresAt = localStorage.getItem('token_expires_at')
-      const isExpired = localExpiresAt && localExpiresAt < new Date().toISOString()
-
-      if (!isExpired && localToken && TokenSession.value !== localToken) {
-        TokenSession.value = localToken
-        TokenSession.expiresAt = localExpiresAt ?? ''
-        setTokenState(localToken)
-      }
-    }
-
-    window.addEventListener('focus', handleFocus)
-    return () => window.removeEventListener('focus', handleFocus)
-  }, [])
-
-
-  useEffect(() => {
-    if (!token || user) return
-
     const fetchUser = async () => {
+
+      if (user || !TokenSession.value) return
       try {
+        console.log(2)
         const res = await meRequest.get()
         if (res.payload) {
           setUser(res.payload)
-          const cartRes = await cartApi.getCart(res.payload.id);
+          const cartRes = await cartApi.getCart(res.payload.id)
           dispatch(setCart(cartRes.payload))
         }
       } catch (err) {
         console.error('Failed to fetch user from token:', err)
+        logout()
+      } finally {
+        setIsLoading(false)
       }
     }
 
     fetchUser()
-  }, [token])
+  }, [user])
 
-
+  const logout = () => {
+    setUser(null)
+    TokenSession.value = ''
+    TokenSession.expiresAt = new Date().toISOString();
+    // Xóa giỏ hàng khi logout
+    dispatch(cartSlice.actions.clearCart())
+  }
   return (
     <AuthContext.Provider
       value={{
         user,
         setUser,
-        token,
-        setToken,
         isLoading,
         logout,
       }}
@@ -152,4 +94,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
-} 
+}
