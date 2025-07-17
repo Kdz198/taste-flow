@@ -33,14 +33,14 @@ namespace MenuServices.Application
             // Determine port and hostname based on environment
             var isRender = Environment.GetEnvironmentVariable("RENDER") == "true";
             var portStr = Environment.GetEnvironmentVariable("PORT");
-            var port = string.IsNullOrEmpty(portStr) ? 80 : int.Parse(portStr); // Use 80 as default for Render free tier
-            builder.WebHost.UseUrls($"http://0.0.0.0:{port}"); // Use Render-assigned port
+            var port = string.IsNullOrEmpty(portStr) ? 80 : int.Parse(portStr); // Use Render-assigned port or 80
+            builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
             builder.Services.PostConfigure<EurekaInstanceOptions>(options =>
             {
                 options.AppName = "MENU-SERVICE";
                 options.HostName = "menu-service-bqae.onrender.com"; // Public URL
-                options.NonSecurePort = port; // Use the same port as WebHost
+                options.NonSecurePort = port; // Sync with WebHost port
                 options.NonSecurePortEnabled = true;
                 options.SecurePortEnabled = false;
                 options.InstanceId = $"MENU-SERVICE:menu-service-bqae.onrender.com:{options.NonSecurePort}";
@@ -51,7 +51,7 @@ namespace MenuServices.Application
             });
 
             // Add Health Checks
-            builder.Services.AddHealthChecks(); // Basic health check registration
+            builder.Services.AddHealthChecks();
 
             // Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();
