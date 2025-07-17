@@ -116,14 +116,14 @@ class IngredientApiService {
   }
 
   static async fetchIngredients(): Promise<Ingredient[]> {
-    const data = await this.makeRequest<Ingredient[]>("/api/ingredients", {}, 1); // Chỉ gọi 1 lần
+    const data = await this.makeRequest<Ingredient[]>("/ingredients", {}, 1); // Chỉ gọi 1 lần
     console.log("Fetched ingredients:", data);
     return Array.isArray(data) ? data : [];
   }
 
   static async fetchIngredientCategories(): Promise<Category[]> {
     try {
-      const data = await this.makeRequest<Category[]>("/api/ingredient-categories", {}, 1); // Chỉ gọi 1 lần
+      const data = await this.makeRequest<Category[]>("/ingredient-categories", {}, 1); // Chỉ gọi 1 lần
       if (!Array.isArray(data)) {
         console.error("Invalid response format from API:", data);
         return [];
@@ -136,7 +136,7 @@ class IngredientApiService {
   }
 
   static async createIngredient(ingredientData: { name: string; category: { id: number }; unit: string }): Promise<Ingredient> {
-    return this.makeRequest<Ingredient>("/api/ingredients", {
+    return this.makeRequest<Ingredient>("/ingredients", {
       method: "POST",
       body: JSON.stringify(ingredientData),
     });
@@ -151,7 +151,7 @@ class IngredientApiService {
       unit: string;
     }
   ): Promise<Ingredient> {
-    return this.makeRequest<Ingredient>(`/api/ingredients`, {
+    return this.makeRequest<Ingredient>(`/ingredients`, {
       method: "POST",
       body: JSON.stringify(ingredientData),
     });
@@ -159,7 +159,7 @@ class IngredientApiService {
 
   static async deleteIngredient(id: number): Promise<{ success: boolean; message?: string }> {
     try {
-      return this.makeRequest<{ success: boolean; message?: string }>(`/api/ingredients/${id}`, {
+      return this.makeRequest<{ success: boolean; message?: string }>(`/ingredients/${id}`, {
         method: "DELETE",
       });
     } catch (error) {

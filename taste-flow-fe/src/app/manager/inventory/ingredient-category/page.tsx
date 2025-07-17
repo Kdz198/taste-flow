@@ -81,25 +81,25 @@ class IngredientCategoryApiService {
   }
 
   static async fetchCategories(): Promise<IngredientCategory[]> {
-    return this.makeRequest<IngredientCategory[]>("/api/ingredient-categories");
+    return this.makeRequest<IngredientCategory[]>("/ingredient-categories");
   }
 
   static async createCategory(categoryData: Omit<IngredientCategory, "id">): Promise<IngredientCategory> {
-    return this.makeRequest<IngredientCategory>("/api/ingredient-categories", {
+    return this.makeRequest<IngredientCategory>("/ingredient-categories", {
       method: "POST",
       body: JSON.stringify(categoryData),
     });
   }
 
   static async updateCategory(id: number, categoryData: IngredientCategory): Promise<IngredientCategory> {
-    return this.makeRequest<IngredientCategory>(`/api/ingredient-categories`, {
+    return this.makeRequest<IngredientCategory>(`/ingredient-categories`, {
       method: "PUT",
       body: JSON.stringify(categoryData),
     });
   }
 
   static async deleteCategory(id: number): Promise<{ success: boolean }> {
-    return this.makeRequest<{ success: boolean }>(`/api/ingredient-categories/${id}`, {
+    return this.makeRequest<{ success: boolean }>(`/ingredient-categories/${id}`, {
       method: "DELETE",
     });
   }

@@ -121,17 +121,17 @@ class MenuApiService {
   }
 
   static async fetchMenus(): Promise<Menu[]> {
-    const data = await this.makeRequest<{ success: boolean; message: string; data: Menu[] }>("/api/menus");
+    const data = await this.makeRequest<{ success: boolean; message: string; data: Menu[] }>("/menus");
     return Array.isArray(data.data) ? data.data : [];
   }
 
   static async fetchCategories(): Promise<Category[]> {
-    const data = await this.makeRequest<{ response: { data: Category[] } }>("/api/categories");
+    const data = await this.makeRequest<{ response: { data: Category[] } }>("/categories");
     return Array.isArray(data.response.data) ? data.response.data : [];
   }
 
   static async fetchIngredients(): Promise<Ingredient[]> {
-    const data = await this.makeRequest<Ingredient[]>("/api/ingredients", {}, 1);
+    const data = await this.makeRequest<Ingredient[]>("/ingredients", {}, 1);
     console.log("Fetched ingredients:", data);
     return Array.isArray(data) ? data : [];
   }
@@ -144,7 +144,7 @@ class MenuApiService {
     ingredients: Ingredient[];
     categories: number[];
   }): Promise<Menu> {
-    return this.makeRequest<Menu>("/api/menus", {
+    return this.makeRequest<Menu>("/menus", {
       method: "POST",
       body: JSON.stringify(menuData),
     });
@@ -162,7 +162,7 @@ class MenuApiService {
       categoriesId: number[];
     }
   ): Promise<Menu> {
-    return this.makeRequest<Menu>(`/api/menus/${id}`, {
+    return this.makeRequest<Menu>(`/menus/${id}`, {
       method: "PUT",
       body: JSON.stringify(menuData),
     });
@@ -170,7 +170,7 @@ class MenuApiService {
 
   static async deleteMenu(id: number): Promise<{ success: boolean; message?: string }> {
     try {
-      return this.makeRequest<{ success: boolean; message?: string }>(`/api/menus/${id}`, {
+      return this.makeRequest<{ success: boolean; message?: string }>(`/menus/${id}`, {
         method: "DELETE",
       });
     } catch (error) {
