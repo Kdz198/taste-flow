@@ -22,7 +22,7 @@ public class MomoService {
     private static final String PARTNER_CODE = "MOMO";
     private static final String ACCESS_KEY = "F8BBA842ECF85";
     private static final String SECRET_KEY = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
-    private static final String REDIRECT_URL = "http://localhost:8085/api/momo/momo-return";
+    private static final String REDIRECT_URL = "https://paymentservice-dzqu.onrender.com/api/momo/momo-return";
     private static final String IPN_URL = "https://callback.url/notify";
     //private static final String REQUEST_TYPE = "captureWallet";
     private static final String REQUEST_TYPE = "payWithMethod";
