@@ -1,10 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { IngredientCategory, IngredientCategoryFormData } from "@/interfaces/ingredient.interface";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
 const IngredientCategoriesTable = dynamic(() => import("./table"), { ssr: false });
 const IngredientCategoryModal = dynamic(() => import("./modal"), { ssr: false });
 
@@ -16,18 +16,6 @@ const getAuthToken = (): string | null => {
   }
   return null;
 };
-
-interface IngredientCategory {
-  id: number;
-  name: string;
-  description: string;
-}
-
-interface IngredientCategoryFormData {
-  id?: number;
-  name: string;
-  description: string;
-}
 
 class IngredientCategoryApiService {
   private static async makeRequest<T>(endpoint: string, options: RequestInit = {}, retries = 3): Promise<T> {

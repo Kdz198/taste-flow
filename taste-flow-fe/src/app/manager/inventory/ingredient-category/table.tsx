@@ -1,12 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { IngredientCategory } from "@/interfaces/ingredient.interface";
 import { Edit2, Eye, Trash2 } from "lucide-react";
 import React from "react";
-
-interface IngredientCategory {
-  id: number;
-  name: string;
-  description: string;
-}
 
 interface IngredientCategoriesTableProps {
   categories: IngredientCategory[];
