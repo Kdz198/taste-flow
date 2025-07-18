@@ -18,15 +18,15 @@ namespace MenuServices.Application
 
             // Add services to the container
             builder.Services.AddControllers();
-            
+
             // Configure CORS for Swagger endpoint only
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("SwaggerPolicy", builder =>
                 {
                     builder.WithOrigins("http://localhost:8080", "https://apigateway-28rx.onrender.com")
-                        .WithMethods("GET")
-                        .AllowAnyHeader();
+                           .WithMethods("GET")
+                           .AllowAnyHeader();
                 });
             });
 
@@ -80,6 +80,7 @@ namespace MenuServices.Application
             var app = builder.Build();
 
             // Configure HTTP pipeline
+            app.UseCors("SwaggerPolicy"); // Apply CORS policy before Swagger
             app.UseSwagger(c => c.RouteTemplate = "api/menus/swagger/{documentName}/swagger.json");
             app.UseSwaggerUI(c =>
             {
