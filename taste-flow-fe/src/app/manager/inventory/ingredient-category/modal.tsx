@@ -4,13 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
 import { Textarea } from "@/components/ui/textarea";
+import { IngredientCategoryFormData } from "@/interfaces/ingredient.interface";
 import React from "react";
-
-interface IngredientCategoryFormData {
-  id?: number; // Optional for new categories
-  name: string;
-  description: string;
-}
 
 interface IngredientCategoryModalProps {
   isOpen: boolean;

@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Ingredient, IngredientDetail, IngredientDetailFormData } from "@/interfaces/ingredient.interface";
 import { ArrowUpDown, Filter, Grid3X3, List, Plus, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
 const IngredientDetailModal = dynamic(() => import("./modal"), { ssr: false });
 const IngredientDetailTable = dynamic(() => import("./table"), { ssr: false });
 
@@ -37,43 +37,6 @@ const parseApiError = (error: unknown): string => {
 
   return errorMessage;
 };
-
-// Types
-interface Ingredient {
-  id: number;
-  name: string;
-  category: {
-    id: number;
-    name: string;
-    description: string;
-  };
-  unit: string;
-  active: boolean;
-}
-
-interface IngredientDetail {
-  id: number;
-  ingredient: Ingredient;
-  entryDate: string;
-  expireDate: string;
-  quantity: number;
-  active: boolean;
-  reserved: number;
-  lastReservedAt: string;
-  availableQuantity: number;
-}
-
-interface IngredientDetailFormData {
-  id?: number;
-  ingredient: Ingredient;
-  entryDate: string;
-  expireDate: string;
-  quantity: number;
-  active: boolean;
-  reserved: number;
-  lastReservedAt: string;
-  availableQuantity: number;
-}
 
 // API Service Layer
 class IngredientDetailApiService {
@@ -170,14 +133,8 @@ const validateIngredientDetailForm = (formData: IngredientDetailFormData): strin
     errors.push("Ingredient is required");
   }
 
-  if (!formData.entryDate) {
-    errors.push("Entry date is required");
-  }
-
   if (!formData.expireDate) {
     errors.push("Expire date is required");
-  } else if (new Date(formData.expireDate) <= new Date(formData.entryDate)) {
-    errors.push("Expire date must be after entry date");
   }
 
   if (formData.quantity <= 0) {
@@ -204,13 +161,9 @@ export default function IngredientDetailPage({
   const [selectedIngredientDetail, setSelectedIngredientDetail] = useState<IngredientDetail | null>(null);
   const [formData, setFormData] = useState<IngredientDetailFormData>({
     ingredient: { id: Number(id), name: "", category: { id: 0, name: "", description: "" }, unit: "GRAM", active: true },
-    entryDate: "",
     expireDate: "",
     quantity: 0,
     active: true,
-    reserved: 0,
-    lastReservedAt: "",
-    availableQuantity: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -276,8 +229,7 @@ export default function IngredientDetailPage({
     const total = Array.isArray(ingredientDetails) ? ingredientDetails.length : 0;
     const active = Array.isArray(ingredientDetails) ? ingredientDetails.filter((detail) => detail.active).length : 0;
     const inactive = total - active;
-    const totalQuantity = total > 0 ? ingredientDetails.reduce((sum, detail) => sum + (detail.availableQuantity || 0), 0) : 0;
-    return { total, active, inactive, totalQuantity };
+    return { total, active, inactive };
   };
 
   const handleSave = async () => {
@@ -315,13 +267,9 @@ export default function IngredientDetailPage({
     setFormData({
       id: detail.id,
       ingredient: detail.ingredient,
-      entryDate: detail.entryDate,
       expireDate: detail.expireDate,
       quantity: detail.quantity,
       active: detail.active,
-      reserved: detail.reserved,
-      lastReservedAt: detail.lastReservedAt,
-      availableQuantity: detail.availableQuantity,
     });
     setValidationErrors([]);
     setError(null);
@@ -351,13 +299,9 @@ export default function IngredientDetailPage({
   const resetForm = () => {
     setFormData({
       ingredient: { id: Number(id), name: "", category: { id: 0, name: "", description: "" }, unit: "GRAM", active: true },
-      entryDate: "",
       expireDate: "",
       quantity: 0,
       active: true,
-      reserved: 0,
-      lastReservedAt: "",
-      availableQuantity: 0,
     });
     setValidationErrors([]);
     setSelectedIngredientDetail(null);
@@ -378,7 +322,6 @@ export default function IngredientDetailPage({
           <p>Total Details: {stats.total}</p>
           <p>Active: {stats.active}</p>
           <p>Inactive: {stats.inactive}</p>
-          <p>Total Quantity: {stats.totalQuantity}</p>
         </div>
         <Button
           onClick={() => {

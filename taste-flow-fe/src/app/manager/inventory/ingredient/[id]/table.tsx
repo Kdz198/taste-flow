@@ -2,32 +2,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { IngredientDetail } from "@/interfaces/ingredient.interface";
 import { Edit2, MoreHorizontal, Trash2 } from "lucide-react";
 import React from "react";
-
-interface Ingredient {
-  id: number;
-  name: string;
-  category: {
-    id: number;
-    name: string;
-    description: string;
-  };
-  unit: string;
-  active: boolean;
-}
-
-interface IngredientDetail {
-  id: number;
-  ingredient: Ingredient;
-  entryDate: string;
-  expireDate: string;
-  quantity: number;
-  active: boolean;
-  reserved: number;
-  lastReservedAt: string;
-  availableQuantity: number;
-}
 
 interface IngredientDetailTableProps {
   ingredientDetails: IngredientDetail[];
@@ -100,12 +77,8 @@ const IngredientDetailTable: React.FC<IngredientDetailTableProps> = ({
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-gray-400">Category: {detail.ingredient.category.name}</p>
-                <p className="text-sm text-gray-400">Entry Date: {formatDate(detail.entryDate)}</p>
                 <p className="text-sm text-gray-400">Expire Date: {formatDate(detail.expireDate)}</p>
                 <p className="text-sm text-gray-400">Quantity: {detail.quantity}</p>
-                <p className="text-sm text-gray-400">Available: {detail.availableQuantity}</p>
-                <p className="text-sm text-gray-400">Last Reserved At: {formatDate(detail.lastReservedAt)}</p>
-                <p className="text-sm text-gray-400">Reserved: {detail.reserved}</p>
                 <Badge variant={detail.active ? "default" : "secondary"}>{detail.active ? "Active" : "Inactive"}</Badge>
               </div>
             </CardContent>
@@ -125,12 +98,8 @@ const IngredientDetailTable: React.FC<IngredientDetailTableProps> = ({
               <div className="flex-1 flex-col space-y-2">
                 <h3 className="font-semibold text-white text-lg">{detail.ingredient.name}</h3>
                 <p className="text-sm text-gray-400">Category: {detail.ingredient.category.name}</p>
-                <p className="text-sm text-gray-400">Entry Date: {formatDate(detail.entryDate)}</p>
                 <p className="text-sm text-gray-400">Expire Date: {formatDate(detail.expireDate)}</p>
                 <p className="text-sm text-gray-400">Quantity: {detail.quantity}</p>
-                <p className="text-sm text-gray-400">Available: {detail.availableQuantity}</p>
-                <p className="text-sm text-gray-400">Last Reserved At: {formatDate(detail.lastReservedAt)}</p>
-                <p className="text-sm text-gray-400">Reserved: {detail.reserved}</p>
                 <Badge variant={detail.active ? "default" : "secondary"}>{detail.active ? "Active" : "Inactive"}</Badge>
               </div>
               <div className="flex gap-2">

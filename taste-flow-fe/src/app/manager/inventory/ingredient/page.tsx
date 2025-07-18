@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Ingredient, IngredientCategory, IngredientFormData } from "@/interfaces/ingredient.interface";
 import { ArrowUpDown, Filter, Grid3X3, List, Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -42,27 +43,6 @@ const parseApiError = (error: unknown): string => {
 
   return errorMessage;
 };
-
-// Types
-interface Category {
-  id: number;
-  name: string;
-  description: string;
-}
-
-interface Ingredient {
-  id: number;
-  name: string;
-  category: Category;
-  unit: string;
-}
-
-interface IngredientFormData {
-  id?: number;
-  name: string;
-  category: number;
-  unit: string;
-}
 
 // API Service Layer
 class IngredientApiService {
@@ -121,9 +101,9 @@ class IngredientApiService {
     return Array.isArray(data) ? data : [];
   }
 
-  static async fetchIngredientCategories(): Promise<Category[]> {
+  static async fetchIngredientCategories(): Promise<IngredientCategory[]> {
     try {
-      const data = await this.makeRequest<Category[]>("/ingredient-categories", {}, 1); // Chỉ gọi 1 lần
+      const data = await this.makeRequest<IngredientCategory[]>("/ingredient-categories", {}, 1); // Chỉ gọi 1 lần
       if (!Array.isArray(data)) {
         console.error("Invalid response format from API:", data);
         return [];
@@ -135,7 +115,7 @@ class IngredientApiService {
     }
   }
 
-  static async createIngredient(ingredientData: { name: string; category: { id: number }; unit: string }): Promise<Ingredient> {
+  static async createIngredient(ingredientData: { name: string; category: { id: number }; unit: string; active: boolean }): Promise<Ingredient> {
     return this.makeRequest<Ingredient>("/ingredients", {
       method: "POST",
       body: JSON.stringify(ingredientData),
@@ -149,10 +129,11 @@ class IngredientApiService {
       name: string;
       category: { id: number };
       unit: string;
+      active: boolean;
     }
   ): Promise<Ingredient> {
     return this.makeRequest<Ingredient>(`/ingredients`, {
-      method: "POST",
+      method: "PUT",
       body: JSON.stringify(ingredientData),
     });
   }
@@ -198,10 +179,10 @@ export default function IngredientPage({
   initialIngredientCategories = [],
 }: Readonly<{
   initialIngredients?: Ingredient[];
-  initialIngredientCategories?: Category[];
+  initialIngredientCategories?: IngredientCategory[];
 }>) {
   const [ingredients, setIngredients] = useState<Ingredient[]>(Array.isArray(initialIngredients) ? initialIngredients : []);
-  const [ingredientCategories, setIngredientCategories] = useState<Category[]>(
+  const [ingredientCategories, setIngredientCategories] = useState<IngredientCategory[]>(
     Array.isArray(initialIngredientCategories) ? initialIngredientCategories : []
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -210,12 +191,13 @@ export default function IngredientPage({
     name: "",
     category: 0,
     unit: "GRAM",
+    active: true,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [categoryFilter, setIngredientCategoryFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [hasFetchedIngredients, setHasFetchedIngredients] = useState(false);
@@ -272,8 +254,8 @@ export default function IngredientPage({
       ? ingredients.filter((ingredient) => {
           if (!ingredient || !ingredient.name || !ingredient.category) return false;
           const matchesSearch = ingredient.name.toLowerCase().includes(searchTerm.toLowerCase());
-          const matchesCategory = categoryFilter === "all" || ingredient.category.id.toString() === categoryFilter;
-          return matchesSearch && matchesCategory;
+          const matchesIngredientCategory = categoryFilter === "all" || ingredient.category.id.toString() === categoryFilter;
+          return matchesSearch && matchesIngredientCategory;
         })
       : [];
 
@@ -310,6 +292,7 @@ export default function IngredientPage({
           name: formData.name.trim(),
           category: { id: formData.category },
           unit: formData.unit,
+          active: formData.active,
         };
         const updatedIngredient = await IngredientApiService.updateIngredient(selectedIngredient.id, ingredientData);
         setIngredients(ingredients.map((ing) => (ing.id === selectedIngredient.id ? updatedIngredient : ing)));
@@ -319,6 +302,7 @@ export default function IngredientPage({
           name: formData.name.trim(),
           category: { id: formData.category },
           unit: formData.unit,
+          active: formData.active,
         };
         const newIngredient = await IngredientApiService.createIngredient(ingredientData);
         setIngredients([...ingredients, newIngredient]);
@@ -341,6 +325,7 @@ export default function IngredientPage({
       name: ingredient.name,
       category: ingredient.category.id,
       unit: ingredient.unit,
+      active: ingredient.active,
     });
     setValidationErrors([]);
     setError(null);
@@ -372,6 +357,7 @@ export default function IngredientPage({
       name: "",
       category: 0,
       unit: "GRAM",
+      active: true,
     });
     setValidationErrors([]);
     setSelectedIngredient(null);
@@ -383,7 +369,7 @@ export default function IngredientPage({
     setError(null);
   };
 
-  const getCategoryName = (categoryId: number): string => {
+  const getIngredientCategoryName = (categoryId: number): string => {
     const category = ingredientCategories.find((cat) => cat.id === categoryId);
     return category ? category.name : "Uncategorized";
   };
@@ -436,7 +422,7 @@ export default function IngredientPage({
               </div>
 
               <div className="flex gap-2">
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select value={categoryFilter} onValueChange={setIngredientCategoryFilter}>
                   <SelectTrigger className="w-36 bg-[#2A2A2A] border-[#3A3A3A] text-white">
                     <Filter className="w-4 h-4 mr-2" />
                     <SelectValue />
@@ -490,7 +476,7 @@ export default function IngredientPage({
             viewMode={viewMode}
             handleEdit={handleEdit}
             handleDelete={handleDelete}
-            getCategoryName={getCategoryName}
+            getIngredientCategoryName={getIngredientCategoryName}
           />
         </CardContent>
       </Card>
