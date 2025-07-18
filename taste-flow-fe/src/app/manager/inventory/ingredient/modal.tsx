@@ -4,27 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Ingredient, IngredientCategory, IngredientFormData } from "@/interfaces/ingredient.interface";
 import React from "react";
-
-interface Category {
-  id: number;
-  name: string;
-  description: string;
-}
-
-interface Ingredient {
-  id: number;
-  name: string;
-  category: Category;
-  unit: string;
-}
-
-interface IngredientFormData {
-  id?: number;
-  name: string;
-  category: number;
-  unit: string;
-}
 
 interface IngredientModalProps {
   isOpen: boolean;
@@ -35,7 +16,7 @@ interface IngredientModalProps {
   validationErrors: string[];
   isLoading: boolean;
   selectedIngredient: Ingredient | null;
-  categories: Category[];
+  categories: IngredientCategory[];
 }
 
 const IngredientModal: React.FC<IngredientModalProps> = ({
@@ -83,7 +64,7 @@ const IngredientModal: React.FC<IngredientModalProps> = ({
           </div>
           <div>
             <Label htmlFor="category" className="text-white">
-              Category *
+              IngredientCategory *
             </Label>
             <Select
               value={formData.category.toString() || "0"}
@@ -117,6 +98,22 @@ const IngredientModal: React.FC<IngredientModalProps> = ({
                 <SelectItem value="LITER">Liter</SelectItem>
                 <SelectItem value="MILLILITER">Milliliter</SelectItem>
                 <SelectItem value="UNIT">Unit</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-white">Status</Label>
+            <Select
+              value={formData.active ? "true" : "false"}
+              onValueChange={(value) => setFormData({ ...formData, active: value === "active" })}
+              disabled={isLoading}
+            >
+              <SelectTrigger className="mt-1 bg-[#2A2A2A] border-[#3A3A3A] text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#2A2A2A] border-[#3A3A3A]">
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
