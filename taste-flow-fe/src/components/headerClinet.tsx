@@ -34,7 +34,6 @@ export default function HeaderClient() {
   const handleLogout = useLogout(() => {
     router.push('/login')
   })
-
   const handleCartClick = async () => {
     if (!user) {
       router.push('/login')

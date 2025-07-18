@@ -31,8 +31,6 @@ export const useOrderProcessing = ({
     const { mutateAsync: createOrder } = useCreateOrder();
     const { mutateAsync: checkStatus } = useCheckOrderStatus();
     const { mutateAsync: getPayment } = useGetPaymentLink();
-    const { data: discountCode } = useDiscountCode();
-
     const [currentStep, setCurrentStep] = useState<OrderProcessStep>(OrderProcessStep.FORM_FILLING);
     const [isProcessing, setIsProcessing] = useState(false);
     const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
@@ -119,9 +117,7 @@ export const useOrderProcessing = ({
             if (statusRes === 'PENDING') {
                 const intervalId = setInterval(async () => {
                     try {
-                        // console.log('🔄 Checking order status for orderId:', orderId);
                         const status = await checkStatus(orderId);
-                        // console.log('🔄 Checking order status:', status);
                         if (status === 'READY_FOR_PAYMENT') {
                             clearInterval(intervalId);
                             const paymentLink = await getPayment({
@@ -129,8 +125,6 @@ export const useOrderProcessing = ({
                                 paymentMethod: selectedPaymentMethod,
                                 discountCode: selectedDiscountCode || undefined,
                             });
-
-                            // console.log('🔗 Payment link:', paymentLink);
                             setCurrentStep(OrderProcessStep.PROCESSING_PAYMENT);
                             if (paymentLink) {
                                 setCurrentStep(OrderProcessStep.REDIRECTING);
@@ -146,7 +140,7 @@ export const useOrderProcessing = ({
                         }
                     } catch (err) {
                         console.error('❌ Lỗi khi kiểm tra trạng thái đơn:', err);
-                        clearInterval(intervalId); // Dừng nếu có lỗi
+                        clearInterval(intervalId);
                     }
                 }, 1000);
             }
@@ -155,9 +149,8 @@ export const useOrderProcessing = ({
             console.error('❌ Lỗi khi đặt hàng:', error);
             toast.error(error instanceof Error ? error.message : 'Đặt hàng thất bại. Vui lòng thử lại.');
             setCurrentStep(OrderProcessStep.FORM_FILLING);
-        } finally {
-            setIsProcessing(false);
-        }
+              setIsProcessing(false);
+        } 
     };
 
     return {
