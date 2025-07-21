@@ -5,11 +5,9 @@ import { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, Star, Heart, ShoppingCart, Utensils, Eye } from 'lucide-react';
-import { FoodType } from '@/schemaValidations/product-schema';
-import { useDispatch, useSelector } from 'react-redux';
-import { Category, CategoryMenu, ItemToAdd, Product } from '@/utils/type';
-import cartSlice, { addItemLocal } from '@/store/slice/slice-cart';
-import { RootState } from '@/store';
+import { useDispatch } from 'react-redux';
+import {  CategoryMenu, Product } from '@/utils/type';
+import  { addItemLocal } from '@/store/slice/slice-cart';
 import { queueAddItem } from '@/store/slice/slice-add-cart';
 import { toast } from 'sonner';
 

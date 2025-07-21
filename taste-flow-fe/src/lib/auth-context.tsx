@@ -18,7 +18,8 @@ import cartSlice, { setCart } from '@/store/slice/slice-cart'
 type AuthContextType = {
   user: RegisterRes | null
   setUser: (user: RegisterRes | null) => void
-  isLoading: boolean
+  isLoading: boolean,
+  setIsLoading: (loading: boolean) => void
   logout: () => void
 }
 
@@ -80,6 +81,7 @@ export function AuthProvider({
         user,
         setUser,
         isLoading,
+        setIsLoading,
         logout,
       }}
     >

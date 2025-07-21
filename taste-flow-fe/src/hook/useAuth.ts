@@ -11,7 +11,7 @@ import { useDispatch } from "react-redux";
 
 export const useLogin = (onSuccessCallback?: () => void) => {
     const dispatch = useDispatch();
-    const { setUser } = useAuth();
+    const { setUser,setIsLoading } = useAuth();
 
     return useMutation({
         mutationFn: async (data: LoginBodyType) => {
@@ -36,10 +36,14 @@ export const useLogin = (onSuccessCallback?: () => void) => {
                 const cart = await cartApi.getCart(userInfo.payload.id);
                 dispatch(setCart(cart.payload));
 
+                
+
                 // 5. Gọi callback (chuyển trang, toast, vv.)
                 onSuccessCallback?.();
             } catch (error) {
                 console.error("Error during login flow:", error);
+            }finally{
+                setIsLoading(false);
             }
         },
 

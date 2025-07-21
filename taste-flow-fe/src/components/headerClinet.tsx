@@ -18,7 +18,6 @@ import { useRouter } from 'next/navigation'
 import { useLogout } from '@/hook/useAuth'
 import { RootState } from '@/store'
 import { useDispatch, useSelector } from 'react-redux'
-
 import { clearAddQueue } from '@/store/slice/slice-add-cart'
 import { setCart } from '@/store/slice/slice-cart'
 import cartApi from '@/apiRequest/cart'
@@ -27,7 +26,7 @@ import { toast } from 'sonner'
 
 export default function HeaderClient() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
   const dispatch = useDispatch()
   const cartQuantity = useSelector((state: RootState) => state.cart.quantity)
   const itemsToAdd = useSelector((state: RootState) => state.cartAdd.itemsToAdd)
@@ -58,13 +57,25 @@ export default function HeaderClient() {
       const res = await cartApi.getCart(user.id)
       dispatch(setCart(res.payload))
       toast.success('Update cart successfully!')
-      router.push('/cart')
+
+      setTimeout(() => {
+        router.push('/cart')
+      }, 1000)
     } catch (error) {
       console.error('Failed to sync cart:', error)
     }
   }
 
-
+  if (isLoading) {
+    return (
+      <div className="flex items-center space-x-2">
+        <div className="w-10 h-10 bg-[#2A2A2A] rounded-xl animate-pulse" />
+        <div className="w-10 h-10 bg-[#2A2A2A] rounded-xl animate-pulse" />
+        <div className="w-10 h-10 bg-[#2A2A2A] rounded-xl animate-pulse" />
+        <div className="w-10 h-10 bg-[#2A2A2A] rounded-full animate-pulse" />
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-center space-x-2">
