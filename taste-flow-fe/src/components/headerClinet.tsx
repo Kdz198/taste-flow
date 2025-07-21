@@ -27,7 +27,7 @@ import { toast } from 'sonner'
 
 export default function HeaderClient() {
   const router = useRouter()
-  const { user, isLoading } = useAuth()
+  const { user } = useAuth()
   const dispatch = useDispatch()
   const cartQuantity = useSelector((state: RootState) => state.cart.quantity)
   const itemsToAdd = useSelector((state: RootState) => state.cartAdd.itemsToAdd)
@@ -64,16 +64,7 @@ export default function HeaderClient() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center space-x-2">
-        <div className="w-10 h-10 bg-[#2A2A2A] rounded-xl animate-pulse" />
-        <div className="w-10 h-10 bg-[#2A2A2A] rounded-xl animate-pulse" />
-        <div className="w-10 h-10 bg-[#2A2A2A] rounded-xl animate-pulse" />
-        <div className="w-10 h-10 bg-[#2A2A2A] rounded-full animate-pulse" />
-      </div>
-    )
-  }
+
 
   return (
     <div className="flex items-center space-x-2">
