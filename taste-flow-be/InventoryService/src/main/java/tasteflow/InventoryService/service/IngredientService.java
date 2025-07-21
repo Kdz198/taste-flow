@@ -37,7 +37,7 @@ public class IngredientService {
 
     public Ingredient updateIngredient(Ingredient ingredient) {
         if(repo.existsById(ingredient.getId())) {
-            if(repo.existsByName(ingredient.getName())) {
+            if(repo.existsByNameAndIdNot(ingredient.getName(), ingredient.getId())) {
                 throw new CustomException("Ingredient is exist !", HttpStatus.CONFLICT);
             }
             return repo.save(ingredient);
@@ -47,6 +47,7 @@ public class IngredientService {
             throw new CustomException("Ingredient does not exist !", HttpStatus.NOT_FOUND);
         }
     }
+
 
     public void deleteIngredient(int id) {
         if(repo.existsById(id)) {

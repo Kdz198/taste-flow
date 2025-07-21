@@ -9,4 +9,5 @@ import tasteflow.InventoryService.model.Ingredient;
 @Repository
 public interface IngredientRepository extends JpaRepository<Ingredient, Integer> {
     boolean existsByName(@NotBlank(message = "Name can not blank !") @Length(min = 10, message = "Name must greater than 10 chars") String name);
+    boolean existsByNameAndIdNot(String name, int id);
 }
