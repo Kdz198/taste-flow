@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowUpDown, Filter, Plus, Search, User as UserIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {User, UserRole, UserStatus} from "@/utils/type";
 
 const UserModal = dynamic(() => import("./modal"), { ssr: false });
 const UserTable = dynamic(() => import("./table"), { ssr: false });
