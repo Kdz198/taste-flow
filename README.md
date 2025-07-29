@@ -28,13 +28,14 @@ A modern application built with **microservices architecture** to streamline res
   - **MSSQL** for specific services.
   - **H2 Database** for development and testing.
 - **API Gateway & Service Registry**: **Eureka** for service discovery and load balancing.
-- **Message Broker**: **RabbitMQ** for event-driven communication.
+- **Message Broker**: **RabbitMQ** hosted on **CloudAMQP** for event-driven communication.
 - **Authentication**: **JWT** for secure user authentication.
 - **API Documentation**: **Swagger** for clear API contracts.
-- **Deployment**: **Render** with **Docker** for containerized services.
+- **Deployment**: **Render** with **Docker** for containerized services, leveraging **CloudAMQP** for managed RabbitMQ.
+
 - **Design Patterns**: 
   - **Saga Pattern**: Manages distributed transactions with compensation for order failures (e.g., out-of-stock or concurrent orders).
-  - **Event-Driven Architecture (EDA)**: Leverages RabbitMQ for asynchronous, decoupled service communication.
+  - **Event-Driven Architecture (EDA)**: Utilizes RabbitMQ on CloudAMQP for asynchronous, decoupled service communication.
 
 ## Microservices
 - **User Service**: Handles registration, login, and profile updates.
@@ -67,7 +68,7 @@ A modern application built with **microservices architecture** to streamline res
 
 ## Setup Instructions
 1. Clone: `git clone <repo-url>`.
-2. Configure `application.properties` (Neon DB, MSSQL, H2, RabbitMQ, JWT secrets).
+2. Configure `application.properties` (Neon DB, MSSQL, H2, CloudAMQP credentials, JWT secrets).
 3. Build and run: `docker-compose up --build`.
 4. Access frontend at `http://localhost:3000` and APIs at `http://localhost:<port>/swagger-ui`.
 
