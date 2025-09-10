@@ -77,22 +77,25 @@ The order processing flow uses a **Saga pattern** to coordinate distributed tran
 
 **Order Processing Steps**:
 ```mermaid
-flowchart TD
-    A[Client: POST /orders] --> B[Order Service: Save as Pending <br/> emit Order.Created]
-    B --> C[Inventory Service: Check ingredients via Menu Service]
-    C -->|Sufficient| D[Lock ingredients <br/> emit Locked.Inventory]
-    C -->|Out-of-stock| E[Emit Out_of_Stock <br/> Order Service cancels order]
-    D --> F[Order Service: Update to Confirmed <br/> emit Order.Confirmed]
-    F --> G[Payment Service: Create record <br/> emit Payment.RecordCreated]
-    G --> H[Order Service: Update ReadyForPayment]
-    H --> I[Frontend: Poll status]
-    I --> J[Frontend: Trigger payment POST /payments/:orderId/method]
-    J --> K[Payment Service: Generate payment URL <br/> emit Payment.Initiated]
-    K --> L[Client completes payment]
-    L -->|Success| M[Emit Payment.Success <br/> Order Service → Complete <br/> Inventory deducts ingredients]
-    L -->|Failure/Timeout| N[Frontend shows Retry Payment]
-    K --> O{5 minutes timeout?}
-    O -->|Yes| P[Inventory Service: Rollback <br/> emit Inventory.RolledBack <br/> Order/Payment cancel]
+---
+config:
+  theme: neo-dark
+---
+flowchart LR
+    A[Client: POST /orders] --> B[Order: Pending]
+    B --> C[Emit Order.Created] --> D[Inventory: Check stock]
+    D -->|Enough| E[Lock Ingredients] --> F[Order: Confirmed]
+    D -->|Out of stock| G[Emit Out_of_Stock] --> H[Order: Cancelled]
+    F --> I[Emit Order.Confirmed] --> J[Payment: Record created]
+    J --> K[Emit Payment.RecordCreated] --> L[Order: ReadyForPayment]
+    L --> M[Frontend: Poll status] --> N[Frontend: POST /payments/:id/method]
+    N --> O[Payment: Initiated] --> P[Emit Payment.Initiated]
+    P --> Q[Client: Complete payment]
+    Q -->|Success| R[Emit Payment.Success] --> S[Order: Complete] & T[Inventory: Deduct]
+    Q -->|Fail/Timeout| U[Retry Payment]
+    E -->|5 min no success| V[Inventory: Rollback] --> H & W[Payment: Cancelled]
+
+
 ```
 
 ## Why This Project?
