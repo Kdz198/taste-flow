@@ -76,20 +76,24 @@ A modern application built with **microservices architecture** to streamline res
 The order processing flow uses a **Saga pattern** to coordinate distributed transactions across services, ensuring reliable inventory checks and payment handling with compensation for failures.
 
 **Order Processing Steps**:
-1. Client places an order via frontend (POST /orders).
-2. Order Service saves order as **Pending** and emits **Order.Created** event.
-3. Inventory Service checks ingredient availability via Menu Service.
-   - If sufficient, locks ingredients and emits **Locked.Inventory**.
-   - If out-of-stock, emits **Out_of_Stock**, and Order Service cancels the order.
-4. Order Service updates to **Confirmed** and emits **Order.Confirmed**.
-5. Payment Service creates a record (empty paymentMethod) and emits **Payment.RecordCreated**.
-6. Order Service updates to **ReadyForPayment**, frontend polls status.
-7. Frontend triggers payment (POST /payments/{orderId}/method), Payment Service generates payment URL and emits **Payment.Initiated**.
-8. Client completes payment:
-   - Success: Emits **Payment.Success**, Order Service updates to **Complete**, Inventory deducts ingredients.
-   - Failure/Timeout: Frontend shows "Retry Payment" option.
-9. If payment isn't completed within 5 minutes, Inventory Service rolls back locked ingredients, emits **Inventory.RolledBack**, and Order/Payment Services cancel the order.
-
+```mermaid
+flowchart TD
+    A[Client: POST /orders] --> B[Order Service: Save as Pending <br/> emit Order.Created]
+    B --> C[Inventory Service: Check ingredients via Menu Service]
+    C -->|Sufficient| D[Lock ingredients <br/> emit Locked.Inventory]
+    C -->|Out-of-stock| E[Emit Out_of_Stock <br/> Order Service cancels order]
+    D --> F[Order Service: Update to Confirmed <br/> emit Order.Confirmed]
+    F --> G[Payment Service: Create record <br/> emit Payment.RecordCreated]
+    G --> H[Order Service: Update ReadyForPayment]
+    H --> I[Frontend: Poll status]
+    I --> J[Frontend: Trigger payment POST /payments/:orderId/method]
+    J --> K[Payment Service: Generate payment URL <br/> emit Payment.Initiated]
+    K --> L[Client completes payment]
+    L -->|Success| M[Emit Payment.Success <br/> Order Service → Complete <br/> Inventory deducts ingredients]
+    L -->|Failure/Timeout| N[Frontend shows Retry Payment]
+    K --> O{5 minutes timeout?}
+    O -->|Yes| P[Inventory Service: Rollback <br/> emit Inventory.RolledBack <br/> Order/Payment cancel]
+```
 
 ## Why This Project?
 Showcases expertise in **microservices**, **cloud-native deployment**, and **advanced patterns** (Saga, EDA) for complex workflows. Highlights proficiency in modern frameworks and scalable architecture.
